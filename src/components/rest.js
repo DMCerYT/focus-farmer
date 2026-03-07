@@ -5,7 +5,7 @@ import { formatMMSS, randomFrom } from './utils.js';
  * Rest controller.
  * Manages break timer, dialogue actions, and transition back to setup screen.
  */
-export function createRestController({ els, state, screens, setDialogue, getIslandSummary, onBack }) {
+export function createRestController({ els, state, screens, avatar, setDialogue, getIslandSummary, onBack }) {
   /**
    * Starts the break countdown timer and updates rest UI state.
    */
@@ -23,8 +23,7 @@ export function createRestController({ els, state, screens, setDialogue, getIsla
       clearInterval(state.restTimerId);
     }
 
-    els.restCharacter.textContent = '😴';
-    els.restCharacter.style.animation = 'rest 1.8s ease-in-out infinite';
+    avatar.showRestIdle();
     els.restStatus.textContent = 'Break active. Let your attention recover.';
 
     state.restTimerId = setInterval(tickRest, 250);
@@ -42,8 +41,7 @@ export function createRestController({ els, state, screens, setDialogue, getIsla
       clearInterval(state.restTimerId);
       state.restTimerId = null;
       els.restStatus.textContent = 'Break done. You are ready to FARM again.';
-      els.restCharacter.textContent = '🙂';
-      els.restCharacter.style.animation = 'idle 1.2s ease-in-out infinite';
+      avatar.showRestDone();
       els.restTimer.textContent = '00:00';
     }
   }
@@ -59,8 +57,7 @@ export function createRestController({ els, state, screens, setDialogue, getIsla
     state.restEndsAt = null;
     els.restTimer.textContent = '00:00';
     els.restStatus.textContent = 'Short rest available.';
-    els.restCharacter.textContent = '😴';
-    els.restCharacter.style.animation = 'idle 1.4s ease-in-out infinite';
+    avatar.showRestIdle();
   }
 
   /**
