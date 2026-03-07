@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Focus Farmer",
+  "description": "Play Focus Farmer as a Chrome extension while you browse.",
+  "version": "1.0.0",
+  "action": {
+    "default_title": "Toggle Focus Farmer Overlay"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "game.html",
+        "src/*.js",
+        "src/components/*.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "icons": {
+    "128": "thumbnail.png"
+  }
+}
