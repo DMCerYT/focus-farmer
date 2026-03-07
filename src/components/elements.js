@@ -11,6 +11,7 @@ export function getElements() {
     focusRunScreen: document.getElementById('focus-run-screen'),
     summaryScreen: document.getElementById('summary-screen'),
     restScreen: document.getElementById('rest-screen'),
+    setupCharacter: document.getElementById('setup-character'),
 
     focusMinutes: document.getElementById('focus-minutes'),
     timerStyle: document.getElementById('timer-style'),

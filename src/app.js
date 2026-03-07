@@ -4,6 +4,7 @@ import { createFocusController } from './components/focus.js';
 import { createRestController } from './components/rest.js';
 import { createScreenController } from './components/screens.js';
 import { createSummaryController } from './components/summary.js';
+import { createAvatarController } from './components/avatar.js';
 import { createGameState } from './components/state.js';
 import { createProgressStore } from './components/progress.js';
 import { createWalkthroughController } from './components/walkthrough.js';
@@ -18,6 +19,7 @@ state.sessions = savedProgress.totals.sessions;
 const els = getElements();
 // Single place that controls which "page" is visible.
 const screens = createScreenController(els);
+const avatar = createAvatarController(els);
 
 /**
  * Broadcasts timer state to the overlay host so it can paint the floating ring
@@ -68,6 +70,7 @@ const focusController = createFocusController({
   els,
   state,
   screens,
+  avatar,
   updateStats,
   setDialogue,
   onReap: (result) => {
@@ -85,6 +88,7 @@ const restController = createRestController({
   els,
   state,
   screens,
+  avatar,
   setDialogue,
   getIslandSummary,
   onBack: () => focusController.resetFocusCycle(),
@@ -104,6 +108,8 @@ const walkthroughController = createWalkthroughController(els, walkthroughSteps)
 function initApp() {
   screens.show('setup');
   updateStats();
+  avatar.init();
+  avatar.showSetupIdle();
   summaryController.init();
   focusController.init();
   restController.init();

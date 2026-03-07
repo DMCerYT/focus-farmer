@@ -19,7 +19,8 @@
       "resources": [
         "game.html",
         "src/*.js",
-        "src/components/*.js"
+        "src/components/*.js",
+        "assets/*.png"
       ],
       "matches": [
         "<all_urls>"

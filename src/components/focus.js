@@ -4,7 +4,7 @@ import { formatMMSS } from './utils.js';
  * Focus session controller.
  * Owns FARM/REAP interactions, focus timer updates, and reward calculation.
  */
-export function createFocusController({ els, state, screens, updateStats, setDialogue, onReap }) {
+export function createFocusController({ els, state, screens, avatar, updateStats, setDialogue, onReap }) {
   function emitFocusState(payload) {
     if (typeof state.onFocusStateChange === 'function') {
       state.onFocusStateChange(payload);
@@ -51,8 +51,7 @@ export function createFocusController({ els, state, screens, updateStats, setDia
 
     // Keep REAP clickable so early presses can show guidance instead of silently failing.
     els.reapBtn.disabled = false;
-    els.focusCharacter.textContent = mode === 'hard' ? '🧑‍🌾🔥' : '🧑‍🌾';
-    els.focusCharacter.style.animation = 'farm 0.9s ease-in-out infinite';
+    avatar.showFocusWalk(mode);
     els.focusStatus.textContent = 'Your farmer is working the fields. Stay with the task.';
     els.focusModeText.textContent = `${mode.toUpperCase()} • ${timerStyle === 'down' ? 'Count Down' : 'Count Up'} • ${focusMin} min`;
 
@@ -88,8 +87,7 @@ export function createFocusController({ els, state, screens, updateStats, setDia
     if (remaining <= 0 && !state.currentFocus.completed) {
       state.currentFocus.completed = true;
       els.focusStatus.textContent = 'Window complete. Press REAP to end focus.';
-      els.focusCharacter.textContent = '🌾';
-      els.focusCharacter.style.animation = 'idle 1.2s ease-in-out infinite';
+      avatar.showFocusComplete();
       emitFocusState({
         status: 'complete',
         remainingMs: 0,
@@ -165,8 +163,7 @@ export function createFocusController({ els, state, screens, updateStats, setDia
     state.currentFocus = null;
     els.reapBtn.disabled = false;
     els.focusTimer.textContent = '00:00';
-    els.focusCharacter.textContent = '🧑‍🌾';
-    els.focusCharacter.style.animation = 'idle 1.4s ease-in-out infinite';
+    avatar.showFocusIdle();
     els.focusStatus.textContent = 'Farming in progress...';
     els.focusModeText.textContent = '';
     emitFocusState({
