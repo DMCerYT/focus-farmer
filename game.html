@@ -2,6 +2,362 @@
 <html lang="en">
 
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Focus Farmer</title>
+  <style>
+    :root {
+      --bg: #f7f2e8;
+      --card: #fffaf2;
+      --ink: #2d261f;
+      --muted: #75624f;
+      --accent: #2f7a3f;
+      --accent-2: #d46b1f;
+      --danger: #b63d2e;
+      --line: #e8dac4;
+      --shadow: 0 10px 24px rgba(61, 44, 23, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      font-family: "Avenir Next", "Nunito", "Trebuchet MS", sans-serif;
+      background:
+        radial-gradient(circle at 10% 0%, #fff9ef 0, transparent 40%),
+        radial-gradient(circle at 90% 15%, #ffe8c2 0, transparent 35%),
+        var(--bg);
+      color: var(--ink);
+      display: flex;
+      justify-content: center;
+      padding: 14px;
+    }
+
+    .app {
+      width: min(460px, 100%);
+      display: grid;
+      gap: 12px;
+      padding-bottom: 24px;
+      width: 90%;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .stats {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .pill {
+      padding: 6px 10px;
+      background: #f3e9d9;
+      border-radius: 999px;
+      border: 1px solid #e9d5b8;
+    }
+
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-icon {
+      width: 16px;
+      height: 16px;
+      image-rendering: pixelated;
+      flex: 0 0 auto;
+    }
+
+    .coin-icon {
+      display: inline-block;
+      background-image: url("./assets/coin_anim.png");
+      background-repeat: no-repeat;
+      background-size: 160px 16px;
+      background-position: 0 0;
+      animation: coin-spin 1s steps(10) infinite;
+    }
+
+    @keyframes coin-spin {
+      from {
+        background-position: 0 0;
+      }
+      to {
+        background-position: -160px 0;
+      }
+    }
+
+    .character-wrap {
+      text-align: center;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px dashed #d8bf99;
+      background: linear-gradient(180deg, #f6ecd9, #fef8ea);
+    }
+
+    .character {
+      display: inline-block;
+      width: 96px;
+      height: 96px;
+      image-rendering: pixelated;
+      background-repeat: no-repeat;
+      background-position: 0 0;
+    }
+
+    @keyframes idle {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-5px) rotate(2deg);
+      }
+    }
+
+    @keyframes farm {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      25% {
+        transform: translateY(-7px) rotate(-6deg);
+      }
+
+      75% {
+        transform: translateY(-3px) rotate(6deg);
+      }
+    }
+
+    @keyframes rest {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-2px);
+      }
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid #d8c4a4;
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 1rem;
+      background: #fffdf8;
+      color: var(--ink);
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+      background: var(--accent);
+    }
+
+    button.secondary {
+      background: var(--accent-2);
+    }
+
+    button.ghost {
+      color: var(--ink);
+      background: #f2e5cf;
+      border: 1px solid #ddc39c;
+    }
+
+    button.warn {
+      background: var(--danger);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .actions {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .timer {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* Must win over component display rules (e.g. .walkthrough { display:grid }). */
+    .hidden {
+      display: none !important;
+    }
+
+    .walkthrough {
+      position: fixed;
+      inset: 0;
+      background: rgba(33, 24, 14, 0.62);
+      display: grid;
+      place-items: center;
+      z-index: 20;
+      padding: 14px;
+    }
+
+    .walkthrough-box {
+      width: min(430px, 100%);
+      background: #fffaf2;
+      border-radius: 18px;
+      border: 1px solid #eddabf;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 10px;
+    }
+
+    .title-art {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #e9d5b8;
+    }
+
+    .splash-card {
+      width: min(460px, 100%);
+      text-align: center;
+      display: grid;
+      gap: 10px;
+      place-items: center;
+    }
+
+    .splash-card h2 {
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <section class="card" id="login-screen">
+    <img class="title-art" src="./assets/title-screen.png" alt="title-screen">
+    <h2>Login</h2>
+
+    <div class="form-grid">
+      <label>Email
+        <input id="auth-email" type="email" />
+      </label>
+      <label>Password
+        <input id="auth-password" type="password" />
+      </label>
+    </div>
+
+    <div class="actions">
+      <button id="login-btn">Login</button>
+      <button id="show-signup-btn" class="secondary">Sign Up</button>
+    </div>
+  </section>
+
+  <!-- Signup form (hidden by default) -->
+  <section class="card hidden" id="signup-screen">
+    <h2>Sign Up</h2>
+
+    <div class="form-grid">
+      <label>Email
+        <input id="signup-email" type="email" />
+      </label>
+      <label>Password
+        <input id="signup-password" type="password" />
+      </label>
+    </div>
+
+    <div class="actions">
+      <button id="signup-btn">Sign Up</button>
+      <button id="show-login-btn" class="secondary">Back to Login</button>
+    </div>
+  </section>
+
+  <section class="card splash-card hidden" id="title-splash-screen">
+    <img class="title-art" src="./assets/title-screen.png" alt="Focus Farmer title splash">
+    <h2>Welcome Back, Farmer</h2>
+  </section>
+
+
+  <main class="app hidden" id="whole-app">
+    <section class="card top">
+      <h1>Focus Farmer</h1>
+      <div class="stats">
+        <span class="pill stat-pill">
+          <span class="stat-icon coin-icon" aria-hidden="true"></span>
+          <span id="coins-pill">0</span>
+        </span>
+        <span class="pill stat-pill">
+          <img class="stat-icon" src="./assets/session_icon.png" alt="Sessions">
+          <span id="streak-pill">0</span>
+        </span>
+        <button id="logout-btn">Logout</button>
+      </div>
+    </section>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Focus Farmer</title>
@@ -11,6 +367,23 @@
 
     <h1>Focus Farmer</h1>
 
+        <label>
+          Mode
+          <select id="mode-style">
+            <option value="regular">Regular</option>
+            <option value="hard">Hard Mode (higher rewards)</option>
+          </select>
+        </label>
+
+        <label>
+          Farmer outfit color
+          <select id="outfit-color">
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+            <option value="red">Red</option>
+          </select>
+        </label>
+      </div>
     <p>Coins: <span id="coin-count">0</span></p>
 
     <hr>
@@ -31,6 +404,16 @@
     <ul id="pet-list"></ul>
 
 
+  <div class="walkthrough" id="walkthrough">
+    <div class="walkthrough-box">
+      <h3 id="walkthrough-title">Welcome to Focus Farmer</h3>
+      <p id="walkthrough-body"></p>
+      <button id="walkthrough-next">Next</button>
+    </div>
+  </div>
+  <script src="./node_modules/@supabase/supabase-js/dist/umd/supabase.js"></script>
+  <script type="module" src="./auth.js"></script>
+  <script type="module" src="./src/app.js"></script>
     <button><a href="index.html">Go back to home</a></button>
 
     <script type="module" src="./game.js"></script>

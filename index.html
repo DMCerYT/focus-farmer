@@ -90,6 +90,37 @@
       border: 1px solid #e9d5b8;
     }
 
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-icon {
+      width: 16px;
+      height: 16px;
+      image-rendering: pixelated;
+      flex: 0 0 auto;
+    }
+
+    .coin-icon {
+      display: inline-block;
+      background-image: url("./assets/coin_anim.png");
+      background-repeat: no-repeat;
+      background-size: 160px 16px;
+      background-position: 0 0;
+      animation: coin-spin 1s steps(10) infinite;
+    }
+
+    @keyframes coin-spin {
+      from {
+        background-position: 0 0;
+      }
+      to {
+        background-position: -160px 0;
+      }
+    }
+
     .character-wrap {
       text-align: center;
       padding: 14px;
@@ -243,17 +274,76 @@
       display: grid;
       gap: 10px;
     }
+
+    .title-art {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #e9d5b8;
+    }
+
+    .splash-card {
+      width: min(460px, 100%);
+      text-align: center;
+      display: grid;
+      gap: 10px;
+      place-items: center;
+    }
   </style>
 </head>
 
 <body>
+  <section class="card" id="login-screen">
+    <img class="title-art" src="./assets/title-screen.png" alt="title-screen">
+    <h2>Login</h2>
 
+    <div class="form-grid">
+      <label>Email
+        <input id="auth-email" type="email" />
+      </label>
+      <label>Password
+        <input id="auth-password" type="password" />
+      </label>
+    </div>
+
+    <div class="actions">
+      <button id="login-btn">Login</button>
+      <button id="show-signup-btn" class="secondary">Sign Up</button>
+    </div>
+  </section>
+
+  <!-- Signup form (hidden by default) -->
+  <section class="card hidden" id="signup-screen">
+    <h2>Sign Up</h2>
+
+    <div class="form-grid">
+      <label>Email
+        <input id="signup-email" type="email" />
+      </label>
+      <label>Password
+        <input id="signup-password" type="password" />
+      </label>
+    </div>
+
+
+  <section class="card splash-card hidden" id="title-splash-screen">
+    <img class="title-art" src="./assets/title-screen.png" alt="Focus Farmer title splash">
+    <h2>Welcome Back, Farmer</h2>
+  </section>
 
 
   <main class="app" id="whole-app">
     <section class="card top">
       <h1>Focus Farmer</h1>
       <div class="stats">
+        <span class="pill stat-pill">
+          <span class="stat-icon coin-icon" aria-hidden="true"></span>
+          <span id="coins-pill">0</span>
+        </span>
+        <span class="pill stat-pill">
+          <img class="stat-icon" src="./assets/session_icon.png" alt="Sessions">
+          <span id="streak-pill">0</span>
+        </span>
+        <button id="logout-btn">Logout</button>
         <span class="pill" id="coins-pill"></span>
         <span class="pill" id="streak-pill"></span>
         <button id="login-btn">Login</button>
@@ -287,6 +377,15 @@
           <select id="mode-style">
             <option value="regular">Regular</option>
             <option value="hard">Hard Mode (higher rewards)</option>
+          </select>
+        </label>
+
+        <label>
+          Farmer outfit color
+          <select id="outfit-color">
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+            <option value="red">Red</option>
           </select>
         </label>
       </div>

@@ -18,9 +18,11 @@
     {
       "resources": [
         "game.html",
+        "auth.js",
         "src/*.js",
         "src/components/*.js",
-        "assets/*.png"
+        "assets/*.png",
+        "node_modules/@supabase/supabase-js/dist/umd/supabase.js"
       ],
       "matches": [
         "<all_urls>"
