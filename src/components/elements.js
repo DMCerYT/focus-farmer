@@ -25,8 +25,12 @@ export function getElements() {
     focusTimer: document.getElementById('focus-timer'),
     reapBtn: document.getElementById('reap-btn'),
     muteBtn: document.getElementById('mute-btn'),
+    volumeSlider: document.getElementById('volume-slider'),
+    volumeValue: document.getElementById('volume-value'),
 
     summaryText: document.getElementById('summary-text'),
+    summaryCharacter: document.getElementById('summary-character'),
+    summaryStatus: document.getElementById('summary-status'),
     restBtn: document.getElementById('rest-btn'),
 
     breakMinutes: document.getElementById('break-minutes'),

@@ -212,7 +212,7 @@ async function bootstrapRemoteSync() {
   await applySession(data?.session || null);
 }
 
-const summaryController = createSummaryController(els, screens, setDialogue);
+const summaryController = createSummaryController(els, screens, setDialogue, avatar);
 const focusController = createFocusController({
   els,
   state,

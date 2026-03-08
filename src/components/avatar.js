@@ -89,6 +89,9 @@ export function createAvatarController(els) {
   }
 
   function still(el, sheet, frame = 0) {
+    if (!el) {
+      return;
+    }
     stop(el);
     setFrame(el, sheet, frame);
   }
@@ -110,11 +113,19 @@ export function createAvatarController(els) {
 
     if (pose === 'focusComplete') {
       still(els.focusCharacter, sheets.front, 4);
+      still(els.summaryCharacter, sheets.front, 4);
       return;
     }
 
     if (pose === 'focusIdle') {
       still(els.focusCharacter, sheets.front, 0);
+      still(els.summaryCharacter, sheets.front, 0);
+      return;
+    }
+
+    if (pose === 'focusDisappointed') {
+      still(els.focusCharacter, sheets.front, 3);
+      still(els.summaryCharacter, sheets.front, 3);
       return;
     }
 
@@ -129,6 +140,7 @@ export function createAvatarController(els) {
     }
 
     still(els.focusCharacter, sheets.front, 0);
+    still(els.summaryCharacter, sheets.front, 0);
     still(els.restCharacter, sheets.front, 2);
   }
 
@@ -160,6 +172,10 @@ export function createAvatarController(els) {
     applyPose('focusIdle');
   }
 
+  function showFocusDisappointed() {
+    applyPose('focusDisappointed');
+  }
+
   function showRestIdle() {
     applyPose('restIdle');
   }
@@ -175,6 +191,7 @@ export function createAvatarController(els) {
     showFocusWalk,
     showFocusComplete,
     showFocusIdle,
+    showFocusDisappointed,
     showRestIdle,
     showRestDone,
   };

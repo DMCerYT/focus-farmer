@@ -1,20 +1,29 @@
 /**
  * Controls summary text rendering and REST navigation action.
  */
-export function createSummaryController(els, screens, setDialogue) {
+export function createSummaryController(els, screens, setDialogue, avatar) {
   /**
    * Builds summary output from reward breakdown.
    */
   function render(result) {
     if (result.endedEarly) {
+      avatar?.showFocusDisappointed?.();
+      if (els.summaryStatus) {
+        els.summaryStatus.textContent = 'Your farmer is disappointed that the harvest ended early.';
+      }
       els.summaryText.textContent = `Early harvest ended. Your plants were not ready, so you earned 0 coins this run.`;
       screens.show('summary');
       return;
     }
 
+    avatar?.showFocusComplete?.();
+    if (els.summaryStatus) {
+      els.summaryStatus.textContent = 'Great focus. Your crops are ready for harvest!';
+    }
+
     const theoryLine = result.hardMode
-      ? 'Flow + autonomy achieved in hard mode. Strong effort, stronger reward.'
-      : 'Flow + autonomy achieved in regular mode. Consistent effort builds momentum.';
+      ? 'Excellent job staying on task! It\'s not easy but you did it regardless. Strong effort, stronger reward.'
+      : 'It\'s okay to get distracted every now and then. Consistent effort builds momentum. That is what matters most!';
 
     const parts = [`${result.baseCoins} base`];
     if (result.hardBonus) parts.push(`${result.hardBonus} hard bonus`);
@@ -29,7 +38,7 @@ export function createSummaryController(els, screens, setDialogue) {
    */
   function onRestClick() {
     screens.show('rest');
-    setDialogue('Attention Restoration Theory: step back, then return refreshed.');
+    setDialogue('Step back, then return refreshed.');
   }
 
   /**

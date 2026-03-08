@@ -225,30 +225,47 @@
     button.warn { background: var(--danger); }
     button:disabled { opacity: 0.45; cursor: not-allowed; }
 
-     #mute-btn {
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      font-size: 0.85rem;
-      min-width: 0;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-
     .actions {
       display: grid;
       gap: 8px;
       margin-top: 10px;
     }
 
-    .timer-row {
+    .audio-controls {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #e2d3ba;
+      border-radius: 12px;
+      background: #fbf4e8;
+      display: grid;
+      gap: 8px;
+    }
+
+    .audio-row {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .volume-wrap {
+      display: flex;
+      align-items: center;
       gap: 8px;
+      width: 100%;
+    }
+
+    .volume-wrap input[type="range"] {
+      flex: 1;
+    }
+
+    .timer {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-align: center;
+      margin: 10px 0;
     }
 
     .muted { color: var(--muted); font-size: 0.9rem; }
@@ -589,9 +606,17 @@
         <div class="character" id="focus-character"></div>
         <p class="muted" id="focus-status" style="margin-top:6px;">Farming in progress...</p>
       </div>
-      <div class="timer-row">
-        <div class="timer" id="focus-timer">00:00</div>
-        <button class="ghost" id="mute-btn">🔊</button>
+      <div class="timer" id="focus-timer">00:00</div>
+      <div class="audio-controls">
+        <div class="audio-row">
+          <span class="muted">Focus music</span>
+          <button class="ghost" id="mute-btn" type="button" aria-label="Mute background music">🔊</button>
+        </div>
+        <div class="volume-wrap">
+          <label class="muted" for="volume-slider">Volume</label>
+          <input id="volume-slider" type="range" min="0" max="100" step="1" value="60" />
+          <span class="muted" id="volume-value">60%</span>
+        </div>
       </div>
       <div class="actions">
         <button class="warn" id="reap-btn">REAP (end focus)</button>
@@ -600,6 +625,10 @@
 
     <section class="card hidden" id="summary-screen">
       <h2>Harvest Summary</h2>
+      <div class="character-wrap" style="margin-top:10px;">
+        <div class="character" id="summary-character"></div>
+        <p class="muted" id="summary-status" style="margin-top:6px;">Your harvest result is in.</p>
+      </div>
       <p class="muted" id="summary-text"></p>
       <div class="actions">
         <button class="secondary" id="rest-btn">REST</button>
@@ -638,7 +667,7 @@
       <div class="walkthrough-box">
         <h3 id="walkthrough-title">Welcome to Focus Farmer</h3>
         <p id="walkthrough-body"></p>
-        <button id="walkthrough-next">Next</button>
+        <button id="walkthrough-next" type="button">Next</button>
       </div>
     </div>
   </main>

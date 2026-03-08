@@ -4,12 +4,30 @@ import { formatMMSS } from './utils.js';
  * Focus session controller.
  * Owns FARM/REAP interactions, focus timer updates, and reward calculation.
  */
-export function createFocusController({ els, state, screens, updateStats, setDialogue, onReap }) {
-
-  const bgm = new Audio('/assets/focus_music.mp3');
-  bgm.loop = true;
+export function createFocusController({ els, state, screens, avatar, updateStats, setDialogue, onReap }) {
+  const BGM_VOLUME_KEY = 'bgmVolume';
+  const TRACKS = [
+    './assets/focus_music.mp3',
+    './assets/Azure_Archipelago_SunsetMusic.mp3',
+    './assets/Azure_Horizon_Zen.mp3',
+    './assets/Azure_Isle_Thinking.mp3',
+    './assets/Midnight_Rain_JPN.mp3',
+    './assets/Upbeat_Focus_Investigation.mp3',
+    './assets/Rainy_Day_Orchestral_Study_Session.mp3',
+  ];
+  let currentTrack = '';
+  const bgm = new Audio(TRACKS[0]);
+  bgm.loop = false;
   bgm.preload = 'auto';
   bgm.muted = !!state.isMuted;
+  const savedVolume = Number(localStorage.getItem(BGM_VOLUME_KEY));
+  bgm.volume = Number.isFinite(savedVolume) ? Math.max(0, Math.min(1, savedVolume)) : 0.6;
+
+  function emitFocusState(payload) {
+    if (typeof state.onFocusStateChange === 'function') {
+      state.onFocusStateChange(payload);
+    }
+  }
 
   /**
    * Updates the mute button label to match current state.
@@ -22,13 +40,23 @@ export function createFocusController({ els, state, screens, updateStats, setDia
     els.muteBtn.title = state.isMuted ? 'Unmute' : 'Mute';
   }
 
+  function updateVolumeUI() {
+    const volumePercent = Math.round(bgm.volume * 100);
+    if (els.volumeSlider) {
+      els.volumeSlider.value = String(volumePercent);
+    }
+    if (els.volumeValue) {
+      els.volumeValue.textContent = `${volumePercent}%`;
+    }
+  }
+
   /**
-   * Toggles mute state, persist preference, and adjust audio.
+   * Toggles mute state, persists preference, and adjusts audio.
    */
   function toggleMute() {
     state.isMuted = !state.isMuted;
     bgm.muted = state.isMuted;
-    localStorage.setItem('bgmMuted', state.isMuted);
+    localStorage.setItem('bgmMuted', String(state.isMuted));
     updateMuteButton();
 
     if (!state.isMuted && state.currentFocus && !state.currentFocus.completed) {
@@ -36,26 +64,55 @@ export function createFocusController({ els, state, screens, updateStats, setDia
     }
   }
 
+  function setVolumeFromInput() {
+    if (!els.volumeSlider) {
+      return;
+    }
+    const parsed = Number(els.volumeSlider.value);
+    if (!Number.isFinite(parsed)) {
+      return;
+    }
+    const nextVolume = Math.max(0, Math.min(1, parsed / 100));
+    bgm.volume = nextVolume;
+    localStorage.setItem(BGM_VOLUME_KEY, String(nextVolume));
+    updateVolumeUI();
+  }
+
   /**
-   * Stops the music and reset to beginning.
+   * Stops music and resets playback position.
    */
   function stopBgm() {
     bgm.pause();
     bgm.currentTime = 0;
   }
 
-  /**
-   * Validates and normalizes focus minutes input.
-   */
-export function createFocusController({ els, state, screens, avatar, updateStats, setDialogue, onReap }) {
-  function emitFocusState(payload) {
-    if (typeof state.onFocusStateChange === 'function') {
-      state.onFocusStateChange(payload);
+  function pickRandomTrack(exclude = '') {
+    const candidates = TRACKS.filter((track) => track !== exclude);
+    if (candidates.length === 0) {
+      return TRACKS[0];
+    }
+    const idx = Math.floor(Math.random() * candidates.length);
+    return candidates[idx];
+  }
+
+  function playRandomTrack(options = {}) {
+    const keepCurrent = Boolean(options.keepCurrent);
+    const selected = keepCurrent && currentTrack ? currentTrack : pickRandomTrack(currentTrack);
+    currentTrack = selected;
+
+    const shouldResume = Boolean(state.currentFocus && !state.currentFocus.completed && !state.isMuted);
+    bgm.src = selected;
+    bgm.currentTime = 0;
+    if (shouldResume) {
+      bgm.play().catch(() => {});
     }
   }
 
+  /**
+   * Validates and normalizes focus minutes input.
+   */
   function readFocusMinutes() {
-    const value = Number(els.focusMinutes.value);
+    const value = Number(els.focusMinutes?.value);
     if (!Number.isFinite(value) || value < 0.1) {
       return null;
     }
@@ -70,31 +127,37 @@ export function createFocusController({ els, state, screens, avatar, updateStats
     }
 
     const durationMs = focusMin * 60 * 1000;
-    const mode = els.modeStyle.value;
-    const timerStyle = els.timerStyle.value;
+    const mode = els.modeStyle?.value || 'regular';
+    const timerStyle = els.timerStyle?.value || 'down';
 
     if (state.focusTimerId) {
       clearInterval(state.focusTimerId);
+      state.focusTimerId = null;
     }
 
+    const now = Date.now();
     state.currentFocus = {
-      startedAt: Date.now(),
-      endsAt: Date.now() + durationMs,
+      startedAt: now,
+      endsAt: now + durationMs,
       durationMs,
       mode,
       timerStyle,
       completed: false,
     };
 
-    els.reapBtn.disabled = false;
-    avatar.showFocusWalk();
-    els.focusStatus.textContent = 'Your farmer is working the fields. Stay with the task.';
-    els.focusModeText.textContent = `${mode.toUpperCase()} • ${timerStyle === 'down' ? 'Count Down' : 'Count Up'} • ${focusMin} min`;
-
-    stopBgm();
-    if (!state.isMuted) {
-      bgm.play().catch(() => {});
+    if (els.reapBtn) {
+      els.reapBtn.disabled = false;
     }
+    avatar.showFocusWalk();
+    if (els.focusStatus) {
+      els.focusStatus.textContent = 'Your farmer is working the fields. Stay with the task.';
+    }
+    if (els.focusModeText) {
+      els.focusModeText.textContent = `${mode.toUpperCase()} • ${timerStyle === 'down' ? 'Count Down' : 'Count Up'} • ${focusMin} min`;
+    }
+
+    playRandomTrack();
+
     emitFocusState({
       status: 'running',
       remainingMs: durationMs,
@@ -115,15 +178,19 @@ export function createFocusController({ els, state, screens, avatar, updateStats
     const elapsed = now - state.currentFocus.startedAt;
     const remaining = state.currentFocus.endsAt - now;
 
-    if (state.currentFocus.timerStyle === 'down') {
-      els.focusTimer.textContent = formatMMSS(remaining);
-    } else {
-      els.focusTimer.textContent = formatMMSS(Math.min(elapsed, state.currentFocus.durationMs));
+    if (els.focusTimer) {
+      if (state.currentFocus.timerStyle === 'down') {
+        els.focusTimer.textContent = formatMMSS(remaining);
+      } else {
+        els.focusTimer.textContent = formatMMSS(Math.min(elapsed, state.currentFocus.durationMs));
+      }
     }
 
     if (remaining <= 0 && !state.currentFocus.completed) {
       state.currentFocus.completed = true;
-      els.focusStatus.textContent = 'Window complete. Press REAP to end focus.';
+      if (els.focusStatus) {
+        els.focusStatus.textContent = 'Window complete. Press REAP to end focus.';
+      }
       avatar.showFocusComplete();
       emitFocusState({
         status: 'complete',
@@ -155,9 +222,12 @@ export function createFocusController({ els, state, screens, avatar, updateStats
         state.focusTimerId = null;
       }
 
+      stopBgm();
       state.currentFocus = null;
-      avatar.showFocusIdle();
-      els.focusStatus.textContent = 'You ended focus early. No rewards this run.';
+      avatar.showFocusDisappointed();
+      if (els.focusStatus) {
+        els.focusStatus.textContent = 'You ended focus early. No rewards this run.';
+      }
       setDialogue(`Early REAP warning: ${formatMMSS(msLeft)} remaining. No rewards were earned.`);
 
       onReap({
@@ -205,6 +275,7 @@ export function createFocusController({ els, state, screens, avatar, updateStats
       earned,
     });
 
+    state.currentFocus = null;
     emitFocusState({
       status: 'idle',
       remainingMs: 0,
@@ -217,12 +288,21 @@ export function createFocusController({ els, state, screens, avatar, updateStats
       clearInterval(state.focusTimerId);
       state.focusTimerId = null;
     }
+
     state.currentFocus = null;
-    els.reapBtn.disabled = false;
-    els.focusTimer.textContent = '00:00';
+    if (els.reapBtn) {
+      els.reapBtn.disabled = false;
+    }
+    if (els.focusTimer) {
+      els.focusTimer.textContent = '00:00';
+    }
     avatar.showSetupIdle();
-    els.focusStatus.textContent = 'Farming in progress...';
-    els.focusModeText.textContent = '';
+    if (els.focusStatus) {
+      els.focusStatus.textContent = 'Farming in progress...';
+    }
+    if (els.focusModeText) {
+      els.focusModeText.textContent = '';
+    }
     stopBgm();
     emitFocusState({
       status: 'idle',
@@ -232,13 +312,19 @@ export function createFocusController({ els, state, screens, avatar, updateStats
   }
 
   function init() {
-    els.farmBtn.addEventListener('click', startFocus);
-    els.reapBtn.addEventListener('click', reapFocus);
-    if (els.muteBtn) {
-      els.muteBtn.addEventListener('click', toggleMute);
-    }
+    bgm.addEventListener('ended', () => {
+      if (!state.currentFocus || state.currentFocus.completed) {
+        return;
+      }
+      playRandomTrack();
+    });
 
+    els.farmBtn?.addEventListener('click', startFocus);
+    els.reapBtn?.addEventListener('click', reapFocus);
+    els.muteBtn?.addEventListener('click', toggleMute);
+    els.volumeSlider?.addEventListener('input', setVolumeFromInput);
     updateMuteButton();
+    updateVolumeUI();
   }
 
   return {
