@@ -11,21 +11,21 @@ export function createSummaryController(els, screens, setDialogue, avatar) {
       if (els.summaryStatus) {
         els.summaryStatus.textContent = 'Your farmer is disappointed that the harvest ended early.';
       }
-      els.summaryText.textContent = `Early harvest ended. Your plants were not ready, so you earned 0 coins this run.`;
+      els.summaryText.textContent = `Early harvest ended. Your plants were not ready, so you earned 0 coins this time.`;
       screens.show('summary');
       return;
     }
 
     avatar?.showFocusComplete?.();
     if (els.summaryStatus) {
-      els.summaryStatus.textContent = 'Great focus. Your crops are ready for harvest!';
+      els.summaryStatus.textContent = 'Great focus. I\'m soiled with toil. The crops are ready for harvest!';
     }
 
     const theoryLine = result.hardMode
       ? 'Excellent job staying on task! It\'s not easy but you did it regardless. Strong effort, stronger reward.'
       : 'It\'s okay to get distracted every now and then. Consistent effort builds momentum. That is what matters most!';
 
-    const parts = [`${result.baseCoins} base`];
+    const parts = [`${result.baseCoins} based on your focus time!`];
     if (result.hardBonus) parts.push(`${result.hardBonus} hard bonus`);
     if (result.luckyBonus) parts.push(`${result.luckyBonus} lucky harvest`);
 

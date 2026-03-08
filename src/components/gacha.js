@@ -17,10 +17,10 @@ const eggSheetByTier = {
 
 const rewardByTier = {
   common: [
-    { name: 'Wave Penguin', rarity: 'common', src: './assets/Piskel Penguin Wave_Kangadrew.gif' },
+    { name: 'Smile and Wave Penguin', rarity: 'common', src: './assets/Piskel Penguin Wave_Kangadrew.gif' },
   ],
   rare: [
-    { name: 'Yellow Hat Penguin', rarity: 'rare', src: './assets/Piskel Penguin with a Yellow Hat.png' },
+    { name: 'The Penguin with the Yellow Hat', rarity: 'rare', src: './assets/Piskel Penguin with a Yellow Hat.png' },
   ],
   epic: [
     { name: 'Matcha Latte Penguin', rarity: 'epic', src: './assets/Piskel Penguin with Matcha Latte v1.1.png' },
