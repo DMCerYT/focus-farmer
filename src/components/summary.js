@@ -25,7 +25,7 @@ export function createSummaryController(els, screens, setDialogue, avatar) {
       ? 'Excellent job staying on task! It\'s not easy but you did it regardless. Strong effort, stronger reward.'
       : 'It\'s okay to get distracted every now and then. Consistent effort builds momentum. That is what matters most!';
 
-    const parts = [`${result.baseCoins} based on your focus time!`];
+    const parts = [`${result.baseCoins} based on your focus time`];
     if (result.hardBonus) parts.push(`${result.hardBonus} hard bonus`);
     if (result.luckyBonus) parts.push(`${result.luckyBonus} lucky harvest`);
 

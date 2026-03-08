@@ -24,7 +24,7 @@ export function createRestController({ els, state, screens, avatar, setDialogue,
     }
 
     avatar.showRestIdle();
-    els.restStatus.textContent = 'Break active. Let your attention recover.';
+    els.restStatus.textContent = 'Break active. Take it easy. Let your attention recover.';
 
     state.restTimerId = setInterval(tickRest, 250);
     tickRest();
