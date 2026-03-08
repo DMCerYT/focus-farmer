@@ -150,7 +150,7 @@ export function createFocusController({ els, state, screens, avatar, updateStats
     }
     avatar.showFocusWalk();
     if (els.focusStatus) {
-      els.focusStatus.textContent = 'Your farmer is working the fields. Stay with the task.';
+      els.focusStatus.textContent = 'Your farmer is working the fields. Stay with your task.';
     }
     if (els.focusModeText) {
       els.focusModeText.textContent = `${mode.toUpperCase()} • ${timerStyle === 'down' ? 'Count Down' : 'Count Up'} • ${focusMin} min`;
@@ -189,7 +189,7 @@ export function createFocusController({ els, state, screens, avatar, updateStats
     if (remaining <= 0 && !state.currentFocus.completed) {
       state.currentFocus.completed = true;
       if (els.focusStatus) {
-        els.focusStatus.textContent = 'Window complete. Press REAP to end focus.';
+        els.focusStatus.textContent = 'Focus window complete. I am ready for a water break. Press REAP to end focus.';
       }
       avatar.showFocusComplete();
       emitFocusState({
@@ -226,7 +226,7 @@ export function createFocusController({ els, state, screens, avatar, updateStats
       state.currentFocus = null;
       avatar.showFocusDisappointed();
       if (els.focusStatus) {
-        els.focusStatus.textContent = 'You ended focus early. No rewards this run.';
+        els.focusStatus.textContent = 'You ended the focus window early. No rewards for this time.';
       }
       setDialogue(`Early REAP warning: ${formatMMSS(msLeft)} remaining. No rewards were earned.`);
 
