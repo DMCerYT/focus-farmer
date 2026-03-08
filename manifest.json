@@ -22,6 +22,7 @@
         "src/*.js",
         "src/components/*.js",
         "assets/*.png",
+        "assets/*.gif",
         "node_modules/@supabase/supabase-js/dist/umd/supabase.js"
       ],
       "matches": [

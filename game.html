@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
@@ -18,9 +18,7 @@
       --shadow: 0 10px 24px rgba(61, 44, 23, 0.12);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -41,7 +39,6 @@
       display: grid;
       gap: 12px;
       padding-bottom: 24px;
-      width: 90%;
     }
 
     .card {
@@ -50,23 +47,13 @@
       border-radius: 18px;
       box-shadow: var(--shadow);
       padding: 14px;
+      width: 100%;
+      image-rendering: pixelated;
     }
 
-    h1,
-    h2,
-    h3,
-    p {
-      margin: 0;
-    }
-
-    h1 {
-      font-size: 1.4rem;
-    }
-
-    h2 {
-      font-size: 1.1rem;
-      margin-bottom: 8px;
-    }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 1.4rem; }
+    h2 { font-size: 1.1rem; margin-bottom: 8px; }
 
     .top {
       display: flex;
@@ -82,6 +69,7 @@
       flex-wrap: wrap;
       font-size: 0.9rem;
       color: var(--muted);
+      align-items: center;
     }
 
     .pill {
@@ -109,17 +97,6 @@
       background-image: url("./assets/coin_anim.png");
       background-repeat: no-repeat;
       background-size: 160px 16px;
-      background-position: 0 0;
-      animation: coin-spin 1s steps(10) infinite;
-    }
-
-    @keyframes coin-spin {
-      from {
-        background-position: 0 0;
-      }
-      to {
-        background-position: -160px 0;
-      }
     }
 
     .character-wrap {
@@ -139,50 +116,7 @@
       background-position: 0 0;
     }
 
-    @keyframes idle {
-
-      0%,
-      100% {
-        transform: translateY(0) rotate(0deg);
-      }
-
-      50% {
-        transform: translateY(-5px) rotate(2deg);
-      }
-    }
-
-    @keyframes farm {
-
-      0%,
-      100% {
-        transform: translateY(0) rotate(0deg);
-      }
-
-      25% {
-        transform: translateY(-7px) rotate(-6deg);
-      }
-
-      75% {
-        transform: translateY(-3px) rotate(6deg);
-      }
-    }
-
-    @keyframes rest {
-
-      0%,
-      100% {
-        transform: translateY(0);
-      }
-
-      50% {
-        transform: translateY(-2px);
-      }
-    }
-
-    .form-grid {
-      display: grid;
-      gap: 10px;
-    }
+    .form-grid { display: grid; gap: 10px; }
 
     label {
       display: grid;
@@ -191,8 +125,7 @@
       color: var(--muted);
     }
 
-    input,
-    select {
+    input, select {
       width: 100%;
       border: 1px solid #d8c4a4;
       border-radius: 12px;
@@ -212,24 +145,14 @@
       background: var(--accent);
     }
 
-    button.secondary {
-      background: var(--accent-2);
-    }
-
+    button.secondary { background: var(--accent-2); }
     button.ghost {
       color: var(--ink);
       background: #f2e5cf;
       border: 1px solid #ddc39c;
     }
-
-    button.warn {
-      background: var(--danger);
-    }
-
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
+    button.warn { background: var(--danger); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
 
     .actions {
       display: grid;
@@ -245,15 +168,8 @@
       margin: 10px 0;
     }
 
-    .muted {
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    /* Must win over component display rules (e.g. .walkthrough { display:grid }). */
-    .hidden {
-      display: none !important;
-    }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    .hidden { display: none !important; }
 
     .walkthrough {
       position: fixed;
@@ -276,6 +192,104 @@
       gap: 10px;
     }
 
+    .gacha-box {
+      border-top: 1px solid #eadac1;
+      margin-top: 12px;
+      padding-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .gacha-grid {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .gacha-list {
+      margin: 0;
+      padding-left: 18px;
+      min-height: 22px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 18, 10, 0.62);
+      display: grid;
+      place-items: center;
+      z-index: 40;
+      padding: 14px;
+    }
+
+    .modal-card {
+      width: min(420px, 100%);
+      background: #fffaf2;
+      border-radius: 18px;
+      border: 1px solid #eddabf;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .hatch-stage {
+      position: relative;
+      width: 180px;
+      height: 160px;
+      margin: 0 auto;
+      display: grid;
+      place-items: end center;
+    }
+
+    .hatch-penguin {
+      position: absolute;
+      bottom: 22px;
+      width: 96px;
+      image-rendering: pixelated;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 220ms ease, transform 220ms ease;
+      z-index: 1;
+    }
+
+    .hatch-penguin.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hatch-egg {
+      position: absolute;
+      bottom: 10px;
+      width: 96px;
+      height: 96px;
+      image-rendering: pixelated;
+      background-repeat: no-repeat;
+      background-position: 0 0;
+      z-index: 2;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+
+    .hatch-egg.crack {
+      opacity: 0.12;
+      transform: translateY(-14px) rotate(-7deg);
+    }
+
+    .penguin-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+    }
+
+    .penguin-thumb {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      flex: 0 0 auto;
+    }
+
     .title-art {
       width: 100%;
       border-radius: 12px;
@@ -289,57 +303,59 @@
       gap: 10px;
       place-items: center;
     }
-
-    .splash-card h2 {
-      margin: 0;
-    }
   </style>
 </head>
 
 <body>
-  <section class="card" id="login-screen">
-    <img class="title-art" src="./assets/title-screen.png" alt="title-screen">
-    <h2>Login</h2>
-
-    <div class="form-grid">
-      <label>Email
-        <input id="auth-email" type="email" />
-      </label>
-      <label>Password
-        <input id="auth-password" type="password" />
-      </label>
-    </div>
-
-    <div class="actions">
-      <button id="login-btn">Login</button>
-      <button id="show-signup-btn" class="secondary">Sign Up</button>
-    </div>
+  <section class="card splash-card" id="welcome-screen">
+    <img class="title-art" src="./assets/title-screen.png" alt="Focus Farmer title" />
+    <h1>Focus Farmer</h1>
+    <button id="start-auth-btn">Start</button>
   </section>
 
-  <!-- Signup form (hidden by default) -->
-  <section class="card hidden" id="signup-screen">
-    <h2>Sign Up</h2>
+  <section class="card hidden" id="login-screen">
+    <img class="title-art" src="./assets/title-screen.png" alt="title-screen" />
+    <h2>Login</h2>
 
-    <div class="form-grid">
+    <form id="login-form" class="form-grid">
       <label>Email
-        <input id="signup-email" type="email" />
+        <input id="auth-email" type="email" required />
       </label>
       <label>Password
-        <input id="signup-password" type="password" />
+        <input id="auth-password" type="password" required />
       </label>
-    </div>
 
-    <div class="actions">
-      <button id="signup-btn">Sign Up</button>
-      <button id="show-login-btn" class="secondary">Back to Login</button>
-    </div>
+      <div class="actions">
+        <button id="login-btn" type="submit">Login</button>
+        <button id="show-signup-btn" class="secondary" type="button">Sign Up</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card hidden" id="signup-screen">
+    <h2>Sign Up</h2>
+    <p class="muted">Benefits: your coins, sessions, and penguin collection are stored to your account.</p>
+    <p class="muted">After signing up, check your inbox and verify your email before logging in.</p>
+
+    <form id="signup-form" class="form-grid">
+      <label>Email
+        <input id="signup-email" type="email" required />
+      </label>
+      <label>Password
+        <input id="signup-password" type="password" required />
+      </label>
+
+      <div class="actions">
+        <button id="signup-btn" type="submit">Sign Up</button>
+        <button id="show-login-btn" class="secondary" type="button">Back to Login</button>
+      </div>
+    </form>
   </section>
 
   <section class="card splash-card hidden" id="title-splash-screen">
-    <img class="title-art" src="./assets/title-screen.png" alt="Focus Farmer title splash">
+    <img class="title-art" src="./assets/title-screen.png" alt="Focus Farmer title splash" />
     <h2>Welcome Back, Farmer</h2>
   </section>
-
 
   <main class="app hidden" id="whole-app">
     <section class="card top">
@@ -350,22 +366,34 @@
           <span id="coins-pill">0</span>
         </span>
         <span class="pill stat-pill">
-          <img class="stat-icon" src="./assets/session_icon.png" alt="Sessions">
+          <img class="stat-icon" src="./assets/session_icon.png" alt="Sessions" />
           <span id="streak-pill">0</span>
         </span>
         <button id="logout-btn">Logout</button>
       </div>
     </section>
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Focus Farmer</title>
-</head>
+    <section class="card" id="focus-setup-screen">
+      <h2>FOCUS Page</h2>
+      <p class="muted">Set your session, then FARM to begin deep work.</p>
+      <div class="character-wrap" style="margin-top:10px;">
+        <div class="character" id="setup-character"></div>
+        <p class="muted" style="margin-top:6px;">Your farmer is ready.</p>
+      </div>
 
-<body>
+      <div class="form-grid" style="margin-top:10px;">
+        <label>
+          Focus timer (minutes)
+          <input id="focus-minutes" type="number" min="0.1" max="180" step="0.1" value="25" />
+        </label>
 
-    <h1>Focus Farmer</h1>
+        <label>
+          Timer style
+          <select id="timer-style">
+            <option value="down">Count down</option>
+            <option value="up">Count up</option>
+          </select>
+        </label>
 
         <label>
           Mode
@@ -384,39 +412,105 @@
           </select>
         </label>
       </div>
-    <p>Coins: <span id="coin-count">0</span></p>
 
-    <hr>
+      <div class="actions">
+        <button id="farm-btn">FARM (start focus)</button>
+      </div>
 
-    <button id="pull-btn">Pull Egg (10 coins)</button>
-    <p id="gacha-result"></p>
+      <div class="gacha-box">
+        <h3>Egg Gacha</h3>
+        <p class="muted">Open the gacha popup to pull and hatch eggs.</p>
+        <div class="actions">
+          <button id="open-gacha-btn">Open Egg Gacha</button>
+        </div>
+      </div>
+    </section>
 
-    <hr>
+    <section class="card hidden" id="focus-run-screen">
+      <h2>Focus Session</h2>
+      <p class="muted" id="focus-mode-text"></p>
+      <div class="character-wrap" style="margin-top:10px;">
+        <div class="character" id="focus-character"></div>
+        <p class="muted" id="focus-status" style="margin-top:6px;">Farming in progress...</p>
+      </div>
+      <div class="timer" id="focus-timer">00:00</div>
+      <div class="actions">
+        <button class="warn" id="reap-btn">REAP (end focus)</button>
+      </div>
+    </section>
 
-    <h2>Your Eggs</h2>
-    <button id="hatch-all-btn">Hatch All Eggs</button>
-    <ul id="egg-list"></ul>
-    <ul id="egg-list"></ul>
+    <section class="card hidden" id="summary-screen">
+      <h2>Harvest Summary</h2>
+      <p class="muted" id="summary-text"></p>
+      <div class="actions">
+        <button class="secondary" id="rest-btn">REST</button>
+      </div>
+    </section>
 
-    <hr>
+    <section class="card hidden" id="rest-screen">
+      <h2>Rest Grove</h2>
+      <p class="muted">Use your break to reset your attention.</p>
+      <div class="character-wrap" style="margin-top:10px;">
+        <div class="character" id="rest-character"></div>
+        <p class="muted" id="rest-status" style="margin-top:6px;">Short rest available.</p>
+      </div>
 
-    <h2>Your Pets</h2>
-    <ul id="pet-list"></ul>
+      <div class="form-grid" style="margin-top:10px;">
+        <label>
+          Break timer (minutes)
+          <input id="break-minutes" type="number" min="0.1" max="60" step="0.1" value="5" />
+        </label>
+      </div>
 
+      <div class="timer" id="rest-timer">00:00</div>
 
-  <div class="walkthrough" id="walkthrough">
-    <div class="walkthrough-box">
-      <h3 id="walkthrough-title">Welcome to Focus Farmer</h3>
-      <p id="walkthrough-body"></p>
-      <button id="walkthrough-next">Next</button>
+      <div class="actions">
+        <button id="start-rest-btn">Start Break</button>
+        <button class="ghost" id="advice-btn">Get Focus Advice</button>
+        <button class="ghost" id="joke-btn">Hear Farm Joke</button>
+        <button class="ghost" id="island-btn">Check Island</button>
+        <button class="ghost" id="view-penguins-btn">My Penguins</button>
+        <button class="secondary" id="back-to-focus-btn">Back to Focus</button>
+      </div>
+      <p class="muted" id="dialogue-output" style="margin-top:10px;"></p>
+    </section>
+
+    <div class="walkthrough" id="walkthrough">
+      <div class="walkthrough-box">
+        <h3 id="walkthrough-title">Welcome to Focus Farmer</h3>
+        <p id="walkthrough-body"></p>
+        <button id="walkthrough-next">Next</button>
+      </div>
     </div>
+  </main>
+
+  <div class="modal hidden" id="gacha-modal">
+    <section class="modal-card">
+      <h3>Egg Gacha</h3>
+      <p class="muted">Coins: <span id="gacha-coin-count">0</span></p>
+      <div class="actions">
+        <button id="pull-btn">Pull Egg (10 coins)</button>
+        <button class="ghost" id="close-gacha-btn">Close</button>
+      </div>
+      <div class="hatch-stage">
+        <img class="hatch-penguin" id="hatch-penguin" alt="Hatched penguin" />
+        <div class="hatch-egg" id="hatch-egg"></div>
+      </div>
+      <p class="muted" id="gacha-result"></p>
+    </section>
   </div>
+
+  <div class="modal hidden" id="penguin-modal">
+    <section class="modal-card">
+      <h3>My Penguins</h3>
+      <ul class="gacha-list" id="pet-list"></ul>
+      <button class="ghost" id="close-penguins-btn">Close</button>
+    </section>
+  </div>
+
   <script src="./node_modules/@supabase/supabase-js/dist/umd/supabase.js"></script>
   <script type="module" src="./auth.js"></script>
   <script type="module" src="./src/app.js"></script>
-    <button><a href="index.html">Go back to home</a></button>
-
-    <script type="module" src="./game.js"></script>
 </body>
 
 </html>
