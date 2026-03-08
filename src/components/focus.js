@@ -1,5 +1,5 @@
 import { formatMMSS } from './utils.js';
-
+import { supabase } from '../../supabaseclient.js';
 /**
  * Focus session controller.
  * Owns FARM/REAP interactions, focus timer updates, and reward calculation.
@@ -16,10 +16,11 @@ export function createFocusController({ els, state, screens, avatar, updateStats
    */
   function readFocusMinutes() {
     const value = Number(els.focusMinutes.value);
-    if (!Number.isFinite(value) || value < 1) {
+    if (!Number.isFinite(value) || value <= 0) {
       return null;
     }
-    return Math.min(180, Math.max(1, Math.floor(value)));
+    // Allow decimals, but clamp between 0.1 min and 180 min
+    return Math.min(180, Math.max(0.1, value));
   }
 
   /**
@@ -106,17 +107,8 @@ export function createFocusController({ els, state, screens, avatar, updateStats
   /**
    * Converts completed focus run into rewards and forwards result to summary.
    */
-  function reapFocus() {
-    if (!state.currentFocus) {
-      return;
-    }
-
-    if (!state.currentFocus.completed) {
-      const msLeft = Math.max(0, state.currentFocus.endsAt - Date.now());
-      els.focusStatus.textContent = "Your plants haven't grown as much yet and aren't ready for harvest.";
-      setDialogue(
-        `Early REAP warning: your plants haven't grown as much and aren't ready for harvest (${formatMMSS(msLeft)} remaining).`
-      );
+  async function reapFocus() {
+    if (!state.currentFocus || !state.currentFocus.completed) {
       return;
     }
 
@@ -145,6 +137,22 @@ export function createFocusController({ els, state, screens, avatar, updateStats
       earned,
     });
 
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      if (sessionData?.session?.user) {
+        await supabase
+          .from('playerstats')
+          .upsert({
+            auth_id: sessionData.session.user.id,
+            coins: state.coins,
+            session_count: state.sessions,
+            last_session: new Date().toISOString(),
+          }, { onConflict: 'auth_id' });
+      }
+    } catch (err) {
+      console.error('Supabase update error:', err);
+    }
     emitFocusState({
       status: 'idle',
       remainingMs: 0,

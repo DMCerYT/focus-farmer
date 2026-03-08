@@ -9,6 +9,9 @@ import { createGameState } from './components/state.js';
 import { createProgressStore } from './components/progress.js';
 import { createWalkthroughController } from './components/walkthrough.js';
 
+import { supabase } from '../supabaseclient.js';
+
+
 // Main app state used across all controllers.
 // Feature work tip: add new top-level cross-screen values in `createGameState`.
 const state = createGameState();
@@ -42,6 +45,8 @@ function broadcastFocusState(timerState) {
 
 state.onFocusStateChange = broadcastFocusState;
 
+
+
 /**
  * Writes a helper/debug message in the REST dialogue area.
  */
@@ -63,6 +68,37 @@ function updateStats() {
  */
 function getIslandSummary() {
   return `${state.sessions} harvests complete, ${state.coins} coins stored, fields are growing.`;
+}
+
+
+export async function loadPlayerState(state) {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+
+    if (!sessionData?.session?.user) return;
+
+    const userId = sessionData.session.user.id;
+
+    const { data, error } = await supabase
+      .from('playerstats')
+      .select('coins, session_count')
+      .eq('auth_id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error loading player stats:', error);
+      return;
+    }
+
+    if (data) {
+      state.coins = data.coins;
+      console.log(state.coins)
+      state.sessions = data.session_count;
+      console.log(state.sessions)
+    }
+  } catch (err) {
+    console.error('Failed to load player state:', err);
+  }
 }
 
 const summaryController = createSummaryController(els, screens, setDialogue);
@@ -105,8 +141,10 @@ const walkthroughController = createWalkthroughController(els, walkthroughSteps)
  * This avoids race conditions when adding new modules that depend on
  * already-bound click handlers.
  */
-function initApp() {
+async function initApp() {
   screens.show('setup');
+
+  await loadPlayerState(state);
   updateStats();
   avatar.init();
   avatar.showSetupIdle();
