@@ -16,6 +16,7 @@ export function getElements() {
     focusMinutes: document.getElementById('focus-minutes'),
     timerStyle: document.getElementById('timer-style'),
     modeStyle: document.getElementById('mode-style'),
+    outfitColor: document.getElementById('outfit-color'),
 
     farmBtn: document.getElementById('farm-btn'),
     focusModeText: document.getElementById('focus-mode-text'),

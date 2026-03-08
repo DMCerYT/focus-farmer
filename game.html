@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -17,7 +18,10 @@
       --shadow: 0 10px 24px rgba(61, 44, 23, 0.12);
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       min-height: 100dvh;
@@ -37,6 +41,7 @@
       display: grid;
       gap: 12px;
       padding-bottom: 24px;
+      width: 90%;
     }
 
     .card {
@@ -47,9 +52,21 @@
       padding: 14px;
     }
 
-    h1, h2, h3, p { margin: 0; }
-    h1 { font-size: 1.4rem; }
-    h2 { font-size: 1.1rem; margin-bottom: 8px; }
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
 
     .top {
       display: flex;
@@ -74,6 +91,37 @@
       border: 1px solid #e9d5b8;
     }
 
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-icon {
+      width: 16px;
+      height: 16px;
+      image-rendering: pixelated;
+      flex: 0 0 auto;
+    }
+
+    .coin-icon {
+      display: inline-block;
+      background-image: url("./assets/coin_anim.png");
+      background-repeat: no-repeat;
+      background-size: 160px 16px;
+      background-position: 0 0;
+      animation: coin-spin 1s steps(10) infinite;
+    }
+
+    @keyframes coin-spin {
+      from {
+        background-position: 0 0;
+      }
+      to {
+        background-position: -160px 0;
+      }
+    }
+
     .character-wrap {
       text-align: center;
       padding: 14px;
@@ -92,19 +140,43 @@
     }
 
     @keyframes idle {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-5px) rotate(2deg); }
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-5px) rotate(2deg);
+      }
     }
 
     @keyframes farm {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      25% { transform: translateY(-7px) rotate(-6deg); }
-      75% { transform: translateY(-3px) rotate(6deg); }
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      25% {
+        transform: translateY(-7px) rotate(-6deg);
+      }
+
+      75% {
+        transform: translateY(-3px) rotate(6deg);
+      }
     }
 
     @keyframes rest {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-2px); }
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-2px);
+      }
     }
 
     .form-grid {
@@ -119,7 +191,8 @@
       color: var(--muted);
     }
 
-    input, select {
+    input,
+    select {
       width: 100%;
       border: 1px solid #d8c4a4;
       border-radius: 12px;
@@ -139,14 +212,24 @@
       background: var(--accent);
     }
 
-    button.secondary { background: var(--accent-2); }
+    button.secondary {
+      background: var(--accent-2);
+    }
+
     button.ghost {
       color: var(--ink);
       background: #f2e5cf;
       border: 1px solid #ddc39c;
     }
-    button.warn { background: var(--danger); }
-    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    button.warn {
+      background: var(--danger);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
 
     .actions {
       display: grid;
@@ -162,9 +245,15 @@
       margin: 10px 0;
     }
 
-    .muted { color: var(--muted); font-size: 0.9rem; }
+    .muted {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
     /* Must win over component display rules (e.g. .walkthrough { display:grid }). */
-    .hidden { display: none !important; }
+    .hidden {
+      display: none !important;
+    }
 
     .walkthrough {
       position: fixed;
@@ -186,15 +275,85 @@
       display: grid;
       gap: 10px;
     }
+
+    .title-art {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #e9d5b8;
+    }
+
+    .splash-card {
+      width: min(460px, 100%);
+      text-align: center;
+      display: grid;
+      gap: 10px;
+      place-items: center;
+    }
+
+    .splash-card h2 {
+      margin: 0;
+    }
   </style>
 </head>
+
 <body>
-  <main class="app">
+  <section class="card" id="login-screen">
+    <img class="title-art" src="./assets/title-screen.png" alt="title-screen">
+    <h2>Login</h2>
+
+    <div class="form-grid">
+      <label>Email
+        <input id="auth-email" type="email" />
+      </label>
+      <label>Password
+        <input id="auth-password" type="password" />
+      </label>
+    </div>
+
+    <div class="actions">
+      <button id="login-btn">Login</button>
+      <button id="show-signup-btn" class="secondary">Sign Up</button>
+    </div>
+  </section>
+
+  <!-- Signup form (hidden by default) -->
+  <section class="card hidden" id="signup-screen">
+    <h2>Sign Up</h2>
+
+    <div class="form-grid">
+      <label>Email
+        <input id="signup-email" type="email" />
+      </label>
+      <label>Password
+        <input id="signup-password" type="password" />
+      </label>
+    </div>
+
+    <div class="actions">
+      <button id="signup-btn">Sign Up</button>
+      <button id="show-login-btn" class="secondary">Back to Login</button>
+    </div>
+  </section>
+
+  <section class="card splash-card hidden" id="title-splash-screen">
+    <img class="title-art" src="./assets/title-screen.png" alt="Focus Farmer title splash">
+    <h2>Welcome Back, Farmer</h2>
+  </section>
+
+
+  <main class="app hidden" id="whole-app">
     <section class="card top">
       <h1>Focus Farmer</h1>
       <div class="stats">
-        <span class="pill" id="coins-pill">Coins: 0</span>
-        <span class="pill" id="streak-pill">Sessions: 0</span>
+        <span class="pill stat-pill">
+          <span class="stat-icon coin-icon" aria-hidden="true"></span>
+          <span id="coins-pill">0</span>
+        </span>
+        <span class="pill stat-pill">
+          <img class="stat-icon" src="./assets/session_icon.png" alt="Sessions">
+          <span id="streak-pill">0</span>
+        </span>
+        <button id="logout-btn">Logout</button>
       </div>
     </section>
 
@@ -225,6 +384,15 @@
           <select id="mode-style">
             <option value="regular">Regular</option>
             <option value="hard">Hard Mode (higher rewards)</option>
+          </select>
+        </label>
+
+        <label>
+          Farmer outfit color
+          <select id="outfit-color">
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+            <option value="red">Red</option>
           </select>
         </label>
       </div>
@@ -290,8 +458,9 @@
       <button id="walkthrough-next">Next</button>
     </div>
   </div>
-
-  <!-- Extension entrypoint: keep app logic in src/ so web + extension share one code path. -->
+  <script src="./node_modules/@supabase/supabase-js/dist/umd/supabase.js"></script>
+  <script type="module" src="./auth.js"></script>
   <script type="module" src="./src/app.js"></script>
 </body>
+
 </html>

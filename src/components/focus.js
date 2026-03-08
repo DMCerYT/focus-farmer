@@ -113,10 +113,38 @@ export function createFocusController({ els, state, screens, avatar, updateStats
 
     if (!state.currentFocus.completed) {
       const msLeft = Math.max(0, state.currentFocus.endsAt - Date.now());
-      els.focusStatus.textContent = "Your plants haven't grown as much yet and aren't ready for harvest.";
+      const elapsedMs = Math.max(0, Date.now() - state.currentFocus.startedAt);
+      const hardMode = state.currentFocus.mode === 'hard';
+      const focusMin = Math.max(1, Math.round(state.currentFocus.durationMs / 60000));
+
+      if (state.focusTimerId) {
+        clearInterval(state.focusTimerId);
+        state.focusTimerId = null;
+      }
+
+      state.currentFocus = null;
+      avatar.showFocusIdle();
+      els.focusStatus.textContent = 'You ended focus early. No rewards this run.';
       setDialogue(
-        `Early REAP warning: your plants haven't grown as much and aren't ready for harvest (${formatMMSS(msLeft)} remaining).`
+        `Early REAP warning: harvest ended with ${formatMMSS(msLeft)} remaining, so no rewards were earned.`
       );
+
+      onReap({
+        endedEarly: true,
+        elapsedMinutes: Math.max(0, Math.round(elapsedMs / 60000)),
+        hardMode,
+        focusMin,
+        baseCoins: 0,
+        hardBonus: 0,
+        luckyBonus: 0,
+        earned: 0,
+      });
+
+      emitFocusState({
+        status: 'idle',
+        remainingMs: 0,
+        durationMs: 0,
+      });
       return;
     }
 
@@ -137,6 +165,7 @@ export function createFocusController({ els, state, screens, avatar, updateStats
     updateStats();
 
     onReap({
+      endedEarly: false,
       hardMode,
       focusMin,
       baseCoins,
@@ -163,7 +192,8 @@ export function createFocusController({ els, state, screens, avatar, updateStats
     state.currentFocus = null;
     els.reapBtn.disabled = false;
     els.focusTimer.textContent = '00:00';
-    avatar.showFocusIdle();
+    // Setup page should always preview the currently selected outfit color.
+    avatar.showSetupIdle();
     els.focusStatus.textContent = 'Farming in progress...';
     els.focusModeText.textContent = '';
     emitFocusState({

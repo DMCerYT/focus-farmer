@@ -20,6 +20,10 @@ const els = getElements();
 // Single place that controls which "page" is visible.
 const screens = createScreenController(els);
 const avatar = createAvatarController(els);
+const REMOTE_PROGRESS_TABLE = 'focus_farmer_progress';
+const OUTFIT_COLOR_KEY = 'focus-farmer-outfit-color';
+let currentUserId = null;
+let suppressRemoteSync = false;
 
 /**
  * Broadcasts timer state to the overlay host so it can paint the floating ring
@@ -53,9 +57,13 @@ function setDialogue(text) {
  * Refreshes top-level stats UI from current state.
  */
 function updateStats() {
-  els.coinsPill.textContent = `Coins: ${state.coins}`;
-  els.streakPill.textContent = `Sessions: ${state.sessions}`;
+  els.coinsPill.textContent = String(state.coins);
+  els.streakPill.textContent = String(state.sessions);
   progressStore.saveTotals({ coins: state.coins, sessions: state.sessions });
+
+  if (!suppressRemoteSync) {
+    void pushRemoteTotals();
+  }
 }
 
 /**
@@ -79,7 +87,7 @@ const focusController = createFocusController({
       mode: result.hardMode ? 'hard' : 'regular',
       durationMinutes: result.focusMin,
       earned: result.earned,
-      endedEarly: false,
+      endedEarly: Boolean(result.endedEarly),
     });
     summaryController.render(result);
   },
@@ -95,6 +103,86 @@ const restController = createRestController({
 });
 const walkthroughController = createWalkthroughController(els, walkthroughSteps);
 
+function getSupabaseClient() {
+  return window.focusFarmerSupabase || null;
+}
+
+async function pullRemoteTotals(userId) {
+  const supabase = getSupabaseClient();
+  if (!supabase || !userId) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from(REMOTE_PROGRESS_TABLE)
+    .select('coins,sessions')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return {
+    coins: Number(data.coins || 0),
+    sessions: Number(data.sessions || 0),
+  };
+}
+
+async function pushRemoteTotals() {
+  const supabase = getSupabaseClient();
+  if (!supabase || !currentUserId) {
+    return;
+  }
+
+  const { error } = await supabase.from(REMOTE_PROGRESS_TABLE).upsert(
+    {
+      user_id: currentUserId,
+      coins: state.coins,
+      sessions: state.sessions,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id' }
+  );
+
+  if (error) {
+    return;
+  }
+}
+
+async function applySession(session) {
+  currentUserId = session?.user?.id ?? null;
+  if (!currentUserId) {
+    return;
+  }
+
+  const remoteTotals = await pullRemoteTotals(currentUserId);
+  if (!remoteTotals) {
+    await pushRemoteTotals();
+    return;
+  }
+
+  suppressRemoteSync = true;
+  state.coins = remoteTotals.coins;
+  state.sessions = remoteTotals.sessions;
+  updateStats();
+  suppressRemoteSync = false;
+}
+
+window.addEventListener('focusfarmer:auth-changed', (event) => {
+  void applySession(event.detail?.session || null);
+});
+
+async function bootstrapRemoteSync() {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return;
+  }
+
+  const { data } = await supabase.auth.getSession();
+  await applySession(data?.session || null);
+}
+
 /**
  * Boots app components and binds all UI interactions.
  * Keep initialization order stable:
@@ -106,8 +194,20 @@ const walkthroughController = createWalkthroughController(els, walkthroughSteps)
  * already-bound click handlers.
  */
 function initApp() {
+  const savedOutfitColor = localStorage.getItem(OUTFIT_COLOR_KEY) || 'blue';
+  avatar.setOutfitColor(savedOutfitColor);
+  if (els.outfitColor) {
+    els.outfitColor.value = savedOutfitColor;
+    els.outfitColor.addEventListener('change', () => {
+      const nextColor = els.outfitColor.value;
+      avatar.setOutfitColor(nextColor);
+      localStorage.setItem(OUTFIT_COLOR_KEY, nextColor);
+    });
+  }
+
   screens.show('setup');
   updateStats();
+  void bootstrapRemoteSync();
   avatar.init();
   avatar.showSetupIdle();
   summaryController.init();

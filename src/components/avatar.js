@@ -1,15 +1,45 @@
 const SHEETS = {
-  front: {
-    url: './assets/jojo_blue_front.png',
-    frameWidth: 32,
-    frameHeight: 32,
-    frameCount: 5,
+  blue: {
+    front: {
+      url: './assets/jojo_blue_front.png',
+      frameWidth: 32,
+      frameHeight: 32,
+      frameCount: 5,
+    },
+    walk: {
+      url: './assets/jojo_blue_walk.png',
+      frameWidth: 32,
+      frameHeight: 32,
+      frameCount: 4,
+    },
   },
-  walk: {
-    url: './assets/jojo_blue_walk.png',
-    frameWidth: 32,
-    frameHeight: 32,
-    frameCount: 4,
+  green: {
+    front: {
+      url: './assets/jojo_green_front.png',
+      frameWidth: 32,
+      frameHeight: 32,
+      frameCount: 5,
+    },
+    walk: {
+      url: './assets/jojo_green_walk.png',
+      frameWidth: 32,
+      frameHeight: 32,
+      frameCount: 4,
+    },
+  },
+  red: {
+    front: {
+      url: './assets/jojo_red_front.png',
+      frameWidth: 32,
+      frameHeight: 32,
+      frameCount: 5,
+    },
+    walk: {
+      url: './assets/jojo_red_walk.png',
+      frameWidth: 32,
+      frameHeight: 32,
+      frameCount: 4,
+    },
   },
 };
 
@@ -20,6 +50,8 @@ const SCALE = 3;
  */
 export function createAvatarController(els) {
   const timers = new Map();
+  let outfitColor = 'blue';
+  let currentPose = 'setupIdle';
 
   function stop(el) {
     const timer = timers.get(el);
@@ -61,38 +93,84 @@ export function createAvatarController(els) {
     setFrame(el, sheet, frame);
   }
 
+  function currentSheets() {
+    return SHEETS[outfitColor] || SHEETS.blue;
+  }
+
+  function applyPose(pose) {
+    const sheets = currentSheets();
+    currentPose = pose;
+    // Keep setup preview synced to the selected outfit at all times.
+    still(els.setupCharacter, sheets.front, 0);
+
+    if (pose === 'focusWalk') {
+      play(els.focusCharacter, sheets.walk, 9);
+      return;
+    }
+
+    if (pose === 'focusComplete') {
+      still(els.focusCharacter, sheets.front, 4);
+      return;
+    }
+
+    if (pose === 'focusIdle') {
+      still(els.focusCharacter, sheets.front, 0);
+      return;
+    }
+
+    if (pose === 'restIdle') {
+      still(els.restCharacter, sheets.front, 2);
+      return;
+    }
+
+    if (pose === 'restDone') {
+      still(els.restCharacter, sheets.front, 1);
+      return;
+    }
+
+    still(els.focusCharacter, sheets.front, 0);
+    still(els.restCharacter, sheets.front, 2);
+  }
+
   function init() {
-    still(els.setupCharacter, SHEETS.front, 0);
-    still(els.focusCharacter, SHEETS.front, 0);
-    still(els.restCharacter, SHEETS.front, 2);
+    applyPose('setupIdle');
+  }
+
+  function setOutfitColor(color) {
+    if (!SHEETS[color]) {
+      return;
+    }
+    outfitColor = color;
+    applyPose(currentPose);
   }
 
   function showSetupIdle() {
-    still(els.setupCharacter, SHEETS.front, 0);
+    applyPose('setupIdle');
   }
 
   function showFocusWalk() {
-    play(els.focusCharacter, SHEETS.walk, 9);
+    applyPose('focusWalk');
   }
 
   function showFocusComplete() {
-    still(els.focusCharacter, SHEETS.front, 4);
+    applyPose('focusComplete');
   }
 
   function showFocusIdle() {
-    still(els.focusCharacter, SHEETS.front, 0);
+    applyPose('focusIdle');
   }
 
   function showRestIdle() {
-    still(els.restCharacter, SHEETS.front, 2);
+    applyPose('restIdle');
   }
 
   function showRestDone() {
-    still(els.restCharacter, SHEETS.front, 1);
+    applyPose('restDone');
   }
 
   return {
     init,
+    setOutfitColor,
     showSetupIdle,
     showFocusWalk,
     showFocusComplete,
