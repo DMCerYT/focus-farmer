@@ -45,6 +45,15 @@ const defaultVisualByTier = {
   legendary: './assets/Piskel Wizard Penguin_03-07-2026.gif',
 };
 
+const tierOrder = ['legendary', 'epic', 'rare', 'common'];
+
+const tierDisplayName = {
+  common: 'Common Shelf',
+  rare: 'Rare Shelf',
+  epic: 'Epic Shelf',
+  legendary: 'Legendary Shelf',
+};
+
 function pickTier() {
   const total = rarityWeights.reduce((sum, row) => sum + row.weight, 0);
   let roll = Math.random() * total;
@@ -67,7 +76,7 @@ function titleCase(value) {
   return `${value[0].toUpperCase()}${value.slice(1)}`;
 }
 
-function resolvePetVisual(pet) {
+  function resolvePetVisual(pet) {
   const name = String(pet?.name || '').toLowerCase();
   if (name.includes('surfs up') || name.includes('surfer')) {
     return './assets/Piskel Penguin Surfer Bro WhiteAndGold_Kangadrew.png';
@@ -83,6 +92,48 @@ function resolvePetVisual(pet) {
   }
 
   return defaultVisualByTier[pet?.rarity] || defaultVisualByTier.common;
+}
+
+function createShelfElement(tier, pets) {
+  const section = document.createElement('section');
+  section.className = 'shelf';
+
+  const title = document.createElement('h4');
+  title.className = `shelf-title ${tier}`;
+  title.textContent = tierDisplayName[tier] || `${titleCase(tier)} Shelf`;
+  section.appendChild(title);
+
+  if (!pets || pets.length === 0) {
+    const emptyText = document.createElement('p');
+    emptyText.className = 'shelf-empty';
+    emptyText.textContent = 'No penguins on this shelf yet.';
+    section.appendChild(emptyText);
+    return section;
+  }
+
+  const list = document.createElement('ul');
+  list.className = 'gacha-list';
+  pets.forEach((pet) => {
+    const li = document.createElement('li');
+    li.className = 'penguin-item';
+
+    const img = document.createElement('img');
+    img.className = 'penguin-thumb';
+    img.src = resolvePetVisual(pet);
+    img.alt = pet.name || 'Penguin';
+
+    const name = pet.name || 'Penguin';
+    const tierLabel = titleCase(pet.rarity || 'common');
+    const text = document.createElement('span');
+    text.textContent = `${name} • ${tierLabel}`;
+
+    li.appendChild(img);
+    li.appendChild(text);
+    list.appendChild(li);
+  });
+
+  section.appendChild(list);
+  return section;
 }
 
 export function createGachaController({ els, state, updateStats, getSupabaseClient }) {
@@ -195,24 +246,24 @@ export function createGachaController({ els, state, updateStats, getSupabaseClie
     }
 
     els.petList.innerHTML = '';
+    const grouped = {
+      common: [],
+      rare: [],
+      epic: [],
+      legendary: [],
+    };
 
     (data || []).forEach((pet) => {
-      const li = document.createElement('li');
-      li.className = 'penguin-item';
+      const tier = String(pet?.rarity || 'common').toLowerCase();
+      if (grouped[tier]) {
+        grouped[tier].push(pet);
+      } else {
+        grouped.common.push(pet);
+      }
+    });
 
-      const img = document.createElement('img');
-      img.className = 'penguin-thumb';
-      img.src = resolvePetVisual(pet);
-      img.alt = pet.name || 'Penguin';
-
-      const name = pet.name || 'Penguin';
-      const tier = titleCase(pet.rarity || 'common');
-      const text = document.createElement('span');
-      text.textContent = `${name} • ${tier}`;
-
-      li.appendChild(img);
-      li.appendChild(text);
-      els.petList.appendChild(li);
+    tierOrder.forEach((tier) => {
+      els.petList.appendChild(createShelfElement(tier, grouped[tier]));
     });
   }
 
@@ -272,9 +323,28 @@ export function createGachaController({ els, state, updateStats, getSupabaseClie
     els.closeGachaBtn?.addEventListener('click', closeGacha);
     els.viewPenguinsBtn?.addEventListener('click', openPenguins);
     els.closePenguinsBtn?.addEventListener('click', closePenguins);
+    els.closePenguinsXBtn?.addEventListener('click', closePenguins);
+
+    els.penguinModal?.addEventListener('click', (event) => {
+      if (event.target === els.penguinModal) {
+        closePenguins();
+      }
+    });
 
     els.pullBtn?.addEventListener('click', () => {
       void pullEgg();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+      if (els.penguinModal && !els.penguinModal.classList.contains('hidden')) {
+        closePenguins();
+      }
+      if (els.gachaModal && !els.gachaModal.classList.contains('hidden')) {
+        closeGacha();
+      }
     });
 
     window.addEventListener('focusfarmer:auth-changed', () => {

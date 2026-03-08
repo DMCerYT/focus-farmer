@@ -12,6 +12,7 @@ import { createWalkthroughController } from './components/walkthrough.js';
 
 const REMOTE_PROGRESS_TABLE = 'focus_farmer_progress';
 const OUTFIT_COLOR_KEY = 'focus-farmer-outfit-color';
+const FLOW_STATE_UNLOCKED_KEY = 'focus-farmer-flow-state-unlocked-v1';
 
 const state = createGameState();
 const progressStore = createProgressStore();
@@ -28,6 +29,15 @@ let currentUserId = null;
 let suppressRemoteSync = false;
 let gachaController = null;
 let coinAnimTimerId = null;
+
+function setFlowStateBackground(active) {
+  document.body.classList.toggle('flow-state', Boolean(active));
+}
+
+function unlockFlowStateBackground() {
+  localStorage.setItem(FLOW_STATE_UNLOCKED_KEY, '1');
+  setFlowStateBackground(true);
+}
 
 function getSupabaseClient() {
   return window.focusFarmerSupabase || null;
@@ -176,6 +186,9 @@ async function applySession(session) {
   suppressRemoteSync = true;
   state.coins = remoteTotals.coins;
   state.sessions = remoteTotals.sessions;
+  if (state.sessions > 0) {
+    unlockFlowStateBackground();
+  }
   updateStats();
   suppressRemoteSync = false;
 }
@@ -211,6 +224,9 @@ const focusController = createFocusController({
       endedEarly: Boolean(result.endedEarly),
     });
     summaryController.render(result);
+    if (!result.endedEarly && state.sessions > 0) {
+      unlockFlowStateBackground();
+    }
   },
 });
 
@@ -233,6 +249,9 @@ gachaController = createGachaController({
 });
 
 function initApp() {
+  const hasUnlockedFlowState = localStorage.getItem(FLOW_STATE_UNLOCKED_KEY) === '1' || state.sessions > 0;
+  setFlowStateBackground(hasUnlockedFlowState);
+
   const savedOutfitColor = localStorage.getItem(OUTFIT_COLOR_KEY) || 'blue';
   avatar.setOutfitColor(savedOutfitColor);
 
