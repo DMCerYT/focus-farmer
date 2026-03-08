@@ -263,7 +263,7 @@ export function createGachaController({ els, state, updateStats, getSupabaseClie
       return;
     }
 
-    setResult(`Tier ${titleCase(tier)}! You hatched: ${reward.name}`);
+    setResult(`You hatched a ${titleCase(tier)} ${reward.name}`);
     await loadPets();
   }
 
