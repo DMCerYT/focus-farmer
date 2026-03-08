@@ -5,33 +5,86 @@ import { createRestController } from './components/rest.js';
 import { createScreenController } from './components/screens.js';
 import { createSummaryController } from './components/summary.js';
 import { createAvatarController } from './components/avatar.js';
+import { createGachaController } from './components/gacha.js';
 import { createGameState } from './components/state.js';
 import { createProgressStore } from './components/progress.js';
 import { createWalkthroughController } from './components/walkthrough.js';
 
-import { supabase } from '../supabaseclient.js';
+const REMOTE_PROGRESS_TABLE = 'focus_farmer_progress';
+const OUTFIT_COLOR_KEY = 'focus-farmer-outfit-color';
 
-
-// Main app state used across all controllers.
-// Feature work tip: add new top-level cross-screen values in `createGameState`.
 const state = createGameState();
 const progressStore = createProgressStore();
 const savedProgress = progressStore.getProgress();
+
 state.coins = savedProgress.totals.coins;
 state.sessions = savedProgress.totals.sessions;
+
 const els = getElements();
-// Single place that controls which "page" is visible.
 const screens = createScreenController(els);
 const avatar = createAvatarController(els);
-const REMOTE_PROGRESS_TABLE = 'focus_farmer_progress';
-const OUTFIT_COLOR_KEY = 'focus-farmer-outfit-color';
+
 let currentUserId = null;
 let suppressRemoteSync = false;
+let gachaController = null;
+let coinAnimTimerId = null;
 
-/**
- * Broadcasts timer state to the overlay host so it can paint the floating ring
- * even when the main game panel is hidden.
- */
+function getSupabaseClient() {
+  return window.focusFarmerSupabase || null;
+}
+
+async function initCoinAnimation() {
+  const icons = Array.from(document.querySelectorAll('.coin-icon'));
+  if (icons.length === 0) {
+    return;
+  }
+
+  if (coinAnimTimerId) {
+    clearTimeout(coinAnimTimerId);
+    coinAnimTimerId = null;
+  }
+
+  try {
+    const response = await fetch('./assets/coin_anim.json');
+    const data = await response.json();
+    const frames = Object.values(data.frames || {})
+      .map((frame) => ({
+        x: Number(frame?.frame?.x || 0),
+        duration: Number(frame?.duration || 100),
+      }))
+      .sort((a, b) => a.x - b.x);
+
+    if (frames.length === 0) {
+      return;
+    }
+
+    const frameWidth = Number(data?.meta?.size?.w || 160) / frames.length;
+    const sheetWidth = Number(data?.meta?.size?.w || frameWidth * frames.length);
+    const sheetHeight = Number(data?.meta?.size?.h || 16);
+    const maxX = Math.max(0, sheetWidth - frameWidth);
+    let frameIndex = 0;
+
+    const paintFrame = () => {
+      const frame = frames[frameIndex];
+      const x = Math.max(0, Math.min(maxX, frame.x));
+
+      icons.forEach((icon) => {
+        icon.style.backgroundImage = 'url("./assets/coin_anim.png")';
+        icon.style.backgroundRepeat = 'no-repeat';
+        icon.style.backgroundSize = `${sheetWidth}px ${sheetHeight}px`;
+        icon.style.backgroundPosition = `-${x}px 0`;
+      });
+
+      frameIndex = (frameIndex + 1) % frames.length;
+      coinAnimTimerId = setTimeout(paintFrame, Math.max(16, frame.duration));
+    };
+
+    paintFrame();
+  } catch {
+    // Keep static icon if animation metadata fails to load.
+  }
+}
+
 function broadcastFocusState(timerState) {
   if (window.parent === window) {
     return;
@@ -49,18 +102,10 @@ function broadcastFocusState(timerState) {
 
 state.onFocusStateChange = broadcastFocusState;
 
-
-
-/**
- * Writes a helper/debug message in the REST dialogue area.
- */
 function setDialogue(text) {
   els.dialogueOutput.textContent = text;
 }
 
-/**
- * Refreshes top-level stats UI from current state.
- */
 function updateStats() {
   els.coinsPill.textContent = String(state.coins);
   els.streakPill.textContent = String(state.sessions);
@@ -69,78 +114,12 @@ function updateStats() {
   if (!suppressRemoteSync) {
     void pushRemoteTotals();
   }
+
+  gachaController?.syncCoins();
 }
 
-/**
- * Produces a compact summary string for island status checks.
- */
 function getIslandSummary() {
   return `${state.sessions} harvests complete, ${state.coins} coins stored, fields are growing.`;
-}
-
-
-export async function loadPlayerState(state) {
-  try {
-    const { data: sessionData } = await supabase.auth.getSession();
-
-    if (!sessionData?.session?.user) return;
-
-    const userId = sessionData.session.user.id;
-
-    const { data, error } = await supabase
-      .from('playerstats')
-      .select('coins, session_count')
-      .eq('auth_id', userId)
-      .single();
-
-    if (error) {
-      console.error('Error loading player stats:', error);
-      return;
-    }
-
-    if (data) {
-      state.coins = data.coins;
-      console.log(state.coins)
-      state.sessions = data.session_count;
-      console.log(state.sessions)
-    }
-  } catch (err) {
-    console.error('Failed to load player state:', err);
-  }
-}
-
-const summaryController = createSummaryController(els, screens, setDialogue);
-const focusController = createFocusController({
-  els,
-  state,
-  screens,
-  avatar,
-  updateStats,
-  setDialogue,
-  onReap: (result) => {
-    progressStore.addSession({
-      endedAt: new Date().toISOString(),
-      mode: result.hardMode ? 'hard' : 'regular',
-      durationMinutes: result.focusMin,
-      earned: result.earned,
-      endedEarly: Boolean(result.endedEarly),
-    });
-    summaryController.render(result);
-  },
-});
-const restController = createRestController({
-  els,
-  state,
-  screens,
-  avatar,
-  setDialogue,
-  getIslandSummary,
-  onBack: () => focusController.resetFocusCycle(),
-});
-const walkthroughController = createWalkthroughController(els, walkthroughSteps);
-
-function getSupabaseClient() {
-  return window.focusFarmerSupabase || null;
 }
 
 async function pullRemoteTotals(userId) {
@@ -171,7 +150,7 @@ async function pushRemoteTotals() {
     return;
   }
 
-  const { error } = await supabase.from(REMOTE_PROGRESS_TABLE).upsert(
+  await supabase.from(REMOTE_PROGRESS_TABLE).upsert(
     {
       user_id: currentUserId,
       coins: state.coins,
@@ -180,10 +159,6 @@ async function pushRemoteTotals() {
     },
     { onConflict: 'user_id' }
   );
-
-  if (error) {
-    return;
-  }
 }
 
 async function applySession(session) {
@@ -219,19 +194,48 @@ async function bootstrapRemoteSync() {
   await applySession(data?.session || null);
 }
 
-/**
- * Boots app components and binds all UI interactions.
- * Keep initialization order stable:
- * 1) base screen + stats
- * 2) controller event bindings
- * 3) view reset helpers
- *
- * This avoids race conditions when adding new modules that depend on
- * already-bound click handlers.
- */
+const summaryController = createSummaryController(els, screens, setDialogue);
+const focusController = createFocusController({
+  els,
+  state,
+  screens,
+  avatar,
+  updateStats,
+  setDialogue,
+  onReap: (result) => {
+    progressStore.addSession({
+      endedAt: new Date().toISOString(),
+      mode: result.hardMode ? 'hard' : 'regular',
+      durationMinutes: result.focusMin,
+      earned: result.earned,
+      endedEarly: Boolean(result.endedEarly),
+    });
+    summaryController.render(result);
+  },
+});
+
+const restController = createRestController({
+  els,
+  state,
+  screens,
+  avatar,
+  setDialogue,
+  getIslandSummary,
+  onBack: () => focusController.resetFocusCycle(),
+});
+
+const walkthroughController = createWalkthroughController(els, walkthroughSteps);
+gachaController = createGachaController({
+  els,
+  state,
+  updateStats,
+  getSupabaseClient,
+});
+
 function initApp() {
   const savedOutfitColor = localStorage.getItem(OUTFIT_COLOR_KEY) || 'blue';
   avatar.setOutfitColor(savedOutfitColor);
+
   if (els.outfitColor) {
     els.outfitColor.value = savedOutfitColor;
     els.outfitColor.addEventListener('change', () => {
@@ -241,10 +245,7 @@ function initApp() {
     });
   }
 
-async function initApp() {
   screens.show('setup');
-
-  await loadPlayerState(state);
   updateStats();
   void bootstrapRemoteSync();
   avatar.init();
@@ -252,8 +253,10 @@ async function initApp() {
   summaryController.init();
   focusController.init();
   restController.init();
+  gachaController.init();
   walkthroughController.init();
   restController.resetRestScreen();
+  void initCoinAnimation();
 }
 
 initApp();

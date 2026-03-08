@@ -11,12 +11,12 @@ export function createRestController({ els, state, screens, avatar, setDialogue,
    */
   function startRest() {
     const restMin = Number(els.breakMinutes.value);
-    if (!Number.isFinite(restMin) || restMin < 1) {
-      setDialogue('Please enter a valid break timer (1-60 minutes).');
+    if (!Number.isFinite(restMin) || restMin < 0.1) {
+      setDialogue('Please enter a valid break timer (0.1-60 minutes).');
       return;
     }
 
-    const clampedMin = Math.min(60, Math.max(1, Math.floor(restMin)));
+    const clampedMin = Math.min(60, Math.max(0.1, restMin));
     state.restEndsAt = Date.now() + clampedMin * 60 * 1000;
 
     if (state.restTimerId) {
