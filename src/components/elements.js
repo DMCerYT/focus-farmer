@@ -44,6 +44,7 @@ export function getElements() {
     openGachaBtn: document.getElementById('open-gacha-btn'),
     closeGachaBtn: document.getElementById('close-gacha-btn'),
     closePenguinsBtn: document.getElementById('close-penguins-btn'),
+    closePenguinsXBtn: document.getElementById('close-penguins-x-btn'),
     gachaModal: document.getElementById('gacha-modal'),
     penguinModal: document.getElementById('penguin-modal'),
     gachaCoinCount: document.getElementById('gacha-coin-count'),
