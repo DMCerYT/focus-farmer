@@ -24,6 +24,7 @@ export function getElements() {
     focusStatus: document.getElementById('focus-status'),
     focusTimer: document.getElementById('focus-timer'),
     reapBtn: document.getElementById('reap-btn'),
+    muteBtn: document.getElementById('mute-btn'),
 
     summaryText: document.getElementById('summary-text'),
     restBtn: document.getElementById('rest-btn'),

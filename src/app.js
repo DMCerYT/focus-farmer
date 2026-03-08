@@ -15,6 +15,11 @@ const OUTFIT_COLOR_KEY = 'focus-farmer-outfit-color';
 const FLOW_STATE_UNLOCKED_KEY = 'focus-farmer-flow-state-unlocked-v1';
 
 const state = createGameState();
+// need to load persisted mute setting before controllers initialize
+const storedMute = localStorage.getItem('bgmMuted');
+if (storedMute !== null) {
+  state.isMuted = storedMute === 'true';
+}
 const progressStore = createProgressStore();
 const savedProgress = progressStore.getProgress();
 
