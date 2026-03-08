@@ -10,5 +10,6 @@ export function createGameState() {
     focusTimerId: null,
     restTimerId: null,
     restEndsAt: null,
+    onFocusStateChange: null,
   };
 }

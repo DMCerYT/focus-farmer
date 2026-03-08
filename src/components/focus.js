@@ -4,7 +4,13 @@ import { supabase } from '../../supabaseclient.js';
  * Focus session controller.
  * Owns FARM/REAP interactions, focus timer updates, and reward calculation.
  */
-export function createFocusController({ els, state, screens, updateStats, setDialogue, onReap }) {
+export function createFocusController({ els, state, screens, avatar, updateStats, setDialogue, onReap }) {
+  function emitFocusState(payload) {
+    if (typeof state.onFocusStateChange === 'function') {
+      state.onFocusStateChange(payload);
+    }
+  }
+
   /**
    * Validates and normalizes focus minutes input.
    */
@@ -44,11 +50,17 @@ export function createFocusController({ els, state, screens, updateStats, setDia
       completed: false,
     };
 
-    els.reapBtn.disabled = true;
-    els.focusCharacter.textContent = mode === 'hard' ? '🧑‍🌾🔥' : '🧑‍🌾';
-    els.focusCharacter.style.animation = 'farm 0.9s ease-in-out infinite';
+    // Keep REAP clickable so early presses can show guidance instead of silently failing.
+    els.reapBtn.disabled = false;
+    avatar.showFocusWalk(mode);
     els.focusStatus.textContent = 'Your farmer is working the fields. Stay with the task.';
     els.focusModeText.textContent = `${mode.toUpperCase()} • ${timerStyle === 'down' ? 'Count Down' : 'Count Up'} • ${focusMin} min`;
+
+    emitFocusState({
+      status: 'running',
+      remainingMs: durationMs,
+      durationMs,
+    });
 
     screens.show('focus');
     state.focusTimerId = setInterval(tickFocus, 250);
@@ -56,7 +68,7 @@ export function createFocusController({ els, state, screens, updateStats, setDia
   }
 
   /**
-   * Timer tick callback that updates clock text and unlocks REAP when done.
+   * Timer tick callback that updates clock text and marks completion state.
    */
   function tickFocus() {
     if (!state.currentFocus) {
@@ -75,11 +87,21 @@ export function createFocusController({ els, state, screens, updateStats, setDia
 
     if (remaining <= 0 && !state.currentFocus.completed) {
       state.currentFocus.completed = true;
-      els.reapBtn.disabled = false;
       els.focusStatus.textContent = 'Window complete. Press REAP to end focus.';
-      els.focusCharacter.textContent = '🌾';
-      els.focusCharacter.style.animation = 'idle 1.2s ease-in-out infinite';
+      avatar.showFocusComplete();
+      emitFocusState({
+        status: 'complete',
+        remainingMs: 0,
+        durationMs: state.currentFocus.durationMs,
+      });
+      return;
     }
+
+    emitFocusState({
+      status: 'running',
+      remainingMs: Math.max(0, remaining),
+      durationMs: state.currentFocus.durationMs,
+    });
   }
 
   /**
@@ -108,6 +130,7 @@ export function createFocusController({ els, state, screens, updateStats, setDia
 
     onReap({
       hardMode,
+      focusMin,
       baseCoins,
       hardBonus,
       luckyBonus,
@@ -130,6 +153,11 @@ export function createFocusController({ els, state, screens, updateStats, setDia
     } catch (err) {
       console.error('Supabase update error:', err);
     }
+    emitFocusState({
+      status: 'idle',
+      remainingMs: 0,
+      durationMs: 0,
+    });
   }
 
   /**
@@ -141,12 +169,16 @@ export function createFocusController({ els, state, screens, updateStats, setDia
       state.focusTimerId = null;
     }
     state.currentFocus = null;
-    els.reapBtn.disabled = true;
+    els.reapBtn.disabled = false;
     els.focusTimer.textContent = '00:00';
-    els.focusCharacter.textContent = '🧑‍🌾';
-    els.focusCharacter.style.animation = 'idle 1.4s ease-in-out infinite';
+    avatar.showFocusIdle();
     els.focusStatus.textContent = 'Farming in progress...';
     els.focusModeText.textContent = '';
+    emitFocusState({
+      status: 'idle',
+      remainingMs: 0,
+      durationMs: 0,
+    });
   }
 
   /**
