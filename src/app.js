@@ -14,6 +14,11 @@ const REMOTE_PROGRESS_TABLE = 'focus_farmer_progress';
 const OUTFIT_COLOR_KEY = 'focus-farmer-outfit-color';
 
 const state = createGameState();
+// need to load persisted mute setting before controllers initialize
+const storedMute = localStorage.getItem('bgmMuted');
+if (storedMute !== null) {
+  state.isMuted = storedMute === 'true';
+}
 const progressStore = createProgressStore();
 const savedProgress = progressStore.getProgress();
 
