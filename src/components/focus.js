@@ -5,6 +5,45 @@ import { formatMMSS } from './utils.js';
  * Owns FARM/REAP interactions, focus timer updates, and reward calculation.
  */
 export function createFocusController({ els, state, screens, updateStats, setDialogue, onReap }) {
+
+  const bgm = new Audio('/assets/focus_music.mp3');
+  bgm.loop = true;
+  bgm.preload = 'auto';
+  bgm.muted = !!state.isMuted;
+
+  /**
+   * Updates the mute button label to match current state.
+   */
+  function updateMuteButton() {
+    if (!els.muteBtn) return;
+    els.muteBtn.textContent = state.isMuted ? '🔇' : '🔊';
+    const label = state.isMuted ? 'Unmute background music' : 'Mute background music';
+    els.muteBtn.setAttribute('aria-label', label);
+    els.muteBtn.title = state.isMuted ? 'Unmute' : 'Mute';
+  }
+
+  /**
+   * Toggles mute state, persist preference, and adjust audio.
+   */
+  function toggleMute() {
+    state.isMuted = !state.isMuted;
+    bgm.muted = state.isMuted;
+    localStorage.setItem('bgmMuted', state.isMuted);
+    updateMuteButton();
+
+    if (!state.isMuted && state.currentFocus && !state.currentFocus.completed) {
+      bgm.play().catch(() => {});
+    }
+  }
+
+  /**
+   * Stops the music and reset to beginning.
+   */
+  function stopBgm() {
+    bgm.pause();
+    bgm.currentTime = 0;
+  }
+
   /**
    * Validates and normalizes focus minutes input.
    */
@@ -48,6 +87,11 @@ export function createFocusController({ els, state, screens, updateStats, setDia
     els.focusCharacter.style.animation = 'farm 0.9s ease-in-out infinite';
     els.focusStatus.textContent = 'Your farmer is working the fields. Stay with the task.';
     els.focusModeText.textContent = `${mode.toUpperCase()} • ${timerStyle === 'down' ? 'Count Down' : 'Count Up'} • ${focusMin} min`;
+
+    stopBgm();
+    if (!state.isMuted) {
+      bgm.play().catch(() => {});
+    }
 
     screens.show('focus');
     state.focusTimerId = setInterval(tickFocus, 250);
@@ -93,6 +137,7 @@ export function createFocusController({ els, state, screens, updateStats, setDia
       clearInterval(state.focusTimerId);
       state.focusTimerId = null;
     }
+    stopBgm();
 
     const focusMin = Math.round(state.currentFocus.durationMs / 60000);
     const hardMode = state.currentFocus.mode === 'hard';
@@ -129,6 +174,7 @@ export function createFocusController({ els, state, screens, updateStats, setDia
     els.focusCharacter.style.animation = 'idle 1.4s ease-in-out infinite';
     els.focusStatus.textContent = 'Farming in progress...';
     els.focusModeText.textContent = '';
+    stopBgm();
   }
 
   /**
@@ -137,6 +183,11 @@ export function createFocusController({ els, state, screens, updateStats, setDia
   function init() {
     els.farmBtn.addEventListener('click', startFocus);
     els.reapBtn.addEventListener('click', reapFocus);
+    if (els.muteBtn) {
+      els.muteBtn.addEventListener('click', toggleMute);
+    }
+
+    updateMuteButton();
   }
 
   return {

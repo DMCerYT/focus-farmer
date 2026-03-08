@@ -8,6 +8,12 @@ import { createGameState } from './components/state.js';
 import { createWalkthroughController } from './components/walkthrough.js';
 
 const state = createGameState();
+// need to load persisted mute setting before controllers initialize
+const storedMute = localStorage.getItem('bgmMuted');
+if (storedMute !== null) {
+  state.isMuted = storedMute === 'true';
+}
+
 const els = getElements();
 const screens = createScreenController(els);
 

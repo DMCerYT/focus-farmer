@@ -10,5 +10,7 @@ export function createGameState() {
     focusTimerId: null,
     restTimerId: null,
     restEndsAt: null,
+    // persisted mute preference for focus background music
+    isMuted: false,
   };
 }
