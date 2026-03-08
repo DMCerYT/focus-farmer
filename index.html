@@ -324,11 +324,6 @@
       </label>
     </div>
 
-    <div class="actions">
-      <button id="signup-btn">Sign Up</button>
-      <button id="show-login-btn" class="secondary">Back to Login</button>
-    </div>
-  </section>
 
   <section class="card splash-card hidden" id="title-splash-screen">
     <img class="title-art" src="./assets/title-screen.png" alt="Focus Farmer title splash">
@@ -336,7 +331,7 @@
   </section>
 
 
-  <main class="app hidden" id="whole-app">
+  <main class="app" id="whole-app">
     <section class="card top">
       <h1>Focus Farmer</h1>
       <div class="stats">
@@ -349,6 +344,9 @@
           <span id="streak-pill">0</span>
         </span>
         <button id="logout-btn">Logout</button>
+        <span class="pill" id="coins-pill"></span>
+        <span class="pill" id="streak-pill"></span>
+        <button id="login-btn">Login</button>
       </div>
     </section>
 
@@ -395,7 +393,11 @@
       <div class="actions">
         <button id="farm-btn">FARM (start focus)</button>
       </div>
+
+      <button><a href="game.html">Gacha</a></button>
+
     </section>
+
 
     <section class="card hidden" id="focus-run-screen">
       <h2>Focus Session</h2>

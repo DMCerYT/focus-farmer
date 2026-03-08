@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -357,27 +357,15 @@
       </div>
     </section>
 
-    <section class="card" id="focus-setup-screen">
-      <h2>FOCUS Page</h2>
-      <p class="muted">Set your session, then FARM to begin deep work.</p>
-      <div class="character-wrap" style="margin-top:10px;">
-        <div class="character" id="setup-character"></div>
-        <p class="muted" style="margin-top:6px;">Your farmer is ready.</p>
-      </div>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Focus Farmer</title>
+</head>
 
-      <div class="form-grid" style="margin-top:10px;">
-        <label>
-          Focus timer (minutes)
-          <input id="focus-minutes" type="number" min="1" max="180" value="25" />
-        </label>
+<body>
 
-        <label>
-          Timer style
-          <select id="timer-style">
-            <option value="down">Count down</option>
-            <option value="up">Count up</option>
-          </select>
-        </label>
+    <h1>Focus Farmer</h1>
 
         <label>
           Mode
@@ -396,60 +384,25 @@
           </select>
         </label>
       </div>
+    <p>Coins: <span id="coin-count">0</span></p>
 
-      <div class="actions">
-        <button id="farm-btn">FARM (start focus)</button>
-      </div>
-    </section>
+    <hr>
 
-    <section class="card hidden" id="focus-run-screen">
-      <h2>Focus Session</h2>
-      <p class="muted" id="focus-mode-text"></p>
-      <div class="character-wrap" style="margin-top:10px;">
-        <div class="character" id="focus-character"></div>
-        <p class="muted" id="focus-status" style="margin-top:6px;">Farming in progress...</p>
-      </div>
-      <div class="timer" id="focus-timer">00:00</div>
-      <div class="actions">
-        <button class="warn" id="reap-btn" disabled>REAP (end focus)</button>
-      </div>
-    </section>
+    <button id="pull-btn">Pull Egg (10 coins)</button>
+    <p id="gacha-result"></p>
 
-    <section class="card hidden" id="summary-screen">
-      <h2>Harvest Summary</h2>
-      <p class="muted" id="summary-text"></p>
-      <div class="actions">
-        <button class="secondary" id="rest-btn">REST</button>
-      </div>
-    </section>
+    <hr>
 
-    <section class="card hidden" id="rest-screen">
-      <h2>Rest Grove</h2>
-      <p class="muted">Use your break to reset your attention.</p>
-      <div class="character-wrap" style="margin-top:10px;">
-        <div class="character" id="rest-character"></div>
-        <p class="muted" id="rest-status" style="margin-top:6px;">Short rest available.</p>
-      </div>
+    <h2>Your Eggs</h2>
+    <button id="hatch-all-btn">Hatch All Eggs</button>
+    <ul id="egg-list"></ul>
+    <ul id="egg-list"></ul>
 
-      <div class="form-grid" style="margin-top:10px;">
-        <label>
-          Break timer (minutes)
-          <input id="break-minutes" type="number" min="1" max="60" value="5" />
-        </label>
-      </div>
+    <hr>
 
-      <div class="timer" id="rest-timer">00:00</div>
+    <h2>Your Pets</h2>
+    <ul id="pet-list"></ul>
 
-      <div class="actions">
-        <button id="start-rest-btn">Start Break</button>
-        <button class="ghost" id="advice-btn">Get Focus Advice</button>
-        <button class="ghost" id="joke-btn">Hear Farm Joke</button>
-        <button class="ghost" id="island-btn">Check Island</button>
-        <button class="secondary" id="back-to-focus-btn">Back to Focus</button>
-      </div>
-      <p class="muted" id="dialogue-output" style="margin-top:10px;"></p>
-    </section>
-  </main>
 
   <div class="walkthrough" id="walkthrough">
     <div class="walkthrough-box">
@@ -461,6 +414,9 @@
   <script src="./node_modules/@supabase/supabase-js/dist/umd/supabase.js"></script>
   <script type="module" src="./auth.js"></script>
   <script type="module" src="./src/app.js"></script>
+    <button><a href="index.html">Go back to home</a></button>
+
+    <script type="module" src="./game.js"></script>
 </body>
 
 </html>
