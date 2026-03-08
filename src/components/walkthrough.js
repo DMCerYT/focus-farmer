@@ -2,6 +2,7 @@
  * Controls the intro walkthrough overlay and step progression.
  */
 export function createWalkthroughController(els, steps) {
+  const WALKTHROUGH_SEEN_KEY = 'focus-farmer-walkthrough-seen-v1';
   let stepIndex = 0;
 
   /**
@@ -21,6 +22,7 @@ export function createWalkthroughController(els, steps) {
     stepIndex += 1;
     if (stepIndex >= steps.length) {
       els.walkthrough.classList.add('hidden');
+      localStorage.setItem(WALKTHROUGH_SEEN_KEY, '1');
       return;
     }
     renderStep();
@@ -30,6 +32,11 @@ export function createWalkthroughController(els, steps) {
    * Wires up events and paints the first walkthrough step.
    */
   function init() {
+    if (localStorage.getItem(WALKTHROUGH_SEEN_KEY) === '1') {
+      els.walkthrough.classList.add('hidden');
+      return;
+    }
+
     els.walkthroughNext.addEventListener('click', onNext);
     renderStep();
   }

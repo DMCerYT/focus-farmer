@@ -154,30 +154,18 @@
     button.warn { background: var(--danger); }
     button:disabled { opacity: 0.45; cursor: not-allowed; }
 
-     #mute-btn {
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      font-size: 0.85rem;
-      min-width: 0;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-
     .actions {
       display: grid;
       gap: 8px;
       margin-top: 10px;
     }
 
-    .timer-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+    .timer {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-align: center;
+      margin: 10px 0;
     }
 
     .muted { color: var(--muted); font-size: 0.9rem; }
@@ -445,10 +433,7 @@
         <div class="character" id="focus-character"></div>
         <p class="muted" id="focus-status" style="margin-top:6px;">Farming in progress...</p>
       </div>
-      <div class="timer-row">
-        <div class="timer" id="focus-timer">00:00</div>
-        <button class="ghost" id="mute-btn">🔊</button>
-      </div>
+      <div class="timer" id="focus-timer">00:00</div>
       <div class="actions">
         <button class="warn" id="reap-btn">REAP (end focus)</button>
       </div>

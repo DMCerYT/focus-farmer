@@ -47,21 +47,25 @@ export function createFocusController({ els, state, screens, updateStats, setDia
   /**
    * Validates and normalizes focus minutes input.
    */
-  function readFocusMinutes() {
-    const value = Number(els.focusMinutes.value);
-    if (!Number.isFinite(value) || value < 1) {
-      return null;
+export function createFocusController({ els, state, screens, avatar, updateStats, setDialogue, onReap }) {
+  function emitFocusState(payload) {
+    if (typeof state.onFocusStateChange === 'function') {
+      state.onFocusStateChange(payload);
     }
-    return Math.min(180, Math.max(1, Math.floor(value)));
   }
 
-  /**
-   * Starts a new focus session and begins ticking timer UI.
-   */
+  function readFocusMinutes() {
+    const value = Number(els.focusMinutes.value);
+    if (!Number.isFinite(value) || value < 0.1) {
+      return null;
+    }
+    return Math.min(180, Math.max(0.1, value));
+  }
+
   function startFocus() {
     const focusMin = readFocusMinutes();
     if (!focusMin) {
-      setDialogue('Please enter a valid focus timer (1-180 minutes).');
+      setDialogue('Please enter a valid focus timer (0.1-180 minutes).');
       return;
     }
 
@@ -82,9 +86,8 @@ export function createFocusController({ els, state, screens, updateStats, setDia
       completed: false,
     };
 
-    els.reapBtn.disabled = true;
-    els.focusCharacter.textContent = mode === 'hard' ? '🧑‍🌾🔥' : '🧑‍🌾';
-    els.focusCharacter.style.animation = 'farm 0.9s ease-in-out infinite';
+    els.reapBtn.disabled = false;
+    avatar.showFocusWalk();
     els.focusStatus.textContent = 'Your farmer is working the fields. Stay with the task.';
     els.focusModeText.textContent = `${mode.toUpperCase()} • ${timerStyle === 'down' ? 'Count Down' : 'Count Up'} • ${focusMin} min`;
 
@@ -92,15 +95,17 @@ export function createFocusController({ els, state, screens, updateStats, setDia
     if (!state.isMuted) {
       bgm.play().catch(() => {});
     }
+    emitFocusState({
+      status: 'running',
+      remainingMs: durationMs,
+      durationMs,
+    });
 
     screens.show('focus');
     state.focusTimerId = setInterval(tickFocus, 250);
     tickFocus();
   }
 
-  /**
-   * Timer tick callback that updates clock text and unlocks REAP when done.
-   */
   function tickFocus() {
     if (!state.currentFocus) {
       return;
@@ -118,18 +123,58 @@ export function createFocusController({ els, state, screens, updateStats, setDia
 
     if (remaining <= 0 && !state.currentFocus.completed) {
       state.currentFocus.completed = true;
-      els.reapBtn.disabled = false;
       els.focusStatus.textContent = 'Window complete. Press REAP to end focus.';
-      els.focusCharacter.textContent = '🌾';
-      els.focusCharacter.style.animation = 'idle 1.2s ease-in-out infinite';
+      avatar.showFocusComplete();
+      emitFocusState({
+        status: 'complete',
+        remainingMs: 0,
+        durationMs: state.currentFocus.durationMs,
+      });
+      return;
     }
+
+    emitFocusState({
+      status: 'running',
+      remainingMs: Math.max(0, remaining),
+      durationMs: state.currentFocus.durationMs,
+    });
   }
 
-  /**
-   * Converts completed focus run into rewards and forwards result to summary.
-   */
   function reapFocus() {
-    if (!state.currentFocus || !state.currentFocus.completed) {
+    if (!state.currentFocus) {
+      return;
+    }
+
+    if (!state.currentFocus.completed) {
+      const msLeft = Math.max(0, state.currentFocus.endsAt - Date.now());
+      const hardMode = state.currentFocus.mode === 'hard';
+      const focusMin = Number((state.currentFocus.durationMs / 60000).toFixed(1));
+
+      if (state.focusTimerId) {
+        clearInterval(state.focusTimerId);
+        state.focusTimerId = null;
+      }
+
+      state.currentFocus = null;
+      avatar.showFocusIdle();
+      els.focusStatus.textContent = 'You ended focus early. No rewards this run.';
+      setDialogue(`Early REAP warning: ${formatMMSS(msLeft)} remaining. No rewards were earned.`);
+
+      onReap({
+        endedEarly: true,
+        hardMode,
+        focusMin,
+        baseCoins: 0,
+        hardBonus: 0,
+        luckyBonus: 0,
+        earned: 0,
+      });
+
+      emitFocusState({
+        status: 'idle',
+        remainingMs: 0,
+        durationMs: 0,
+      });
       return;
     }
 
@@ -139,9 +184,9 @@ export function createFocusController({ els, state, screens, updateStats, setDia
     }
     stopBgm();
 
-    const focusMin = Math.round(state.currentFocus.durationMs / 60000);
+    const focusMin = state.currentFocus.durationMs / 60000;
     const hardMode = state.currentFocus.mode === 'hard';
-    const baseCoins = focusMin * 10;
+    const baseCoins = Math.round(focusMin * 10);
     const hardBonus = hardMode ? Math.floor(baseCoins * 0.5) : 0;
     const luckyBonus = hardMode && Math.random() < 0.3 ? 30 : 0;
     const earned = baseCoins + hardBonus + luckyBonus;
@@ -151,35 +196,41 @@ export function createFocusController({ els, state, screens, updateStats, setDia
     updateStats();
 
     onReap({
+      endedEarly: false,
       hardMode,
+      focusMin: Number(focusMin.toFixed(1)),
       baseCoins,
       hardBonus,
       luckyBonus,
       earned,
     });
+
+    emitFocusState({
+      status: 'idle',
+      remainingMs: 0,
+      durationMs: 0,
+    });
   }
 
-  /**
-   * Resets focus runtime state when user begins another cycle.
-   */
   function resetFocusCycle() {
     if (state.focusTimerId) {
       clearInterval(state.focusTimerId);
       state.focusTimerId = null;
     }
     state.currentFocus = null;
-    els.reapBtn.disabled = true;
+    els.reapBtn.disabled = false;
     els.focusTimer.textContent = '00:00';
-    els.focusCharacter.textContent = '🧑‍🌾';
-    els.focusCharacter.style.animation = 'idle 1.4s ease-in-out infinite';
+    avatar.showSetupIdle();
     els.focusStatus.textContent = 'Farming in progress...';
     els.focusModeText.textContent = '';
     stopBgm();
+    emitFocusState({
+      status: 'idle',
+      remainingMs: 0,
+      durationMs: 0,
+    });
   }
 
-  /**
-   * Wires button events for FARM and REAP actions.
-   */
   function init() {
     els.farmBtn.addEventListener('click', startFocus);
     els.reapBtn.addEventListener('click', reapFocus);

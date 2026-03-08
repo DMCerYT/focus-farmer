@@ -6,6 +6,12 @@ export function createSummaryController(els, screens, setDialogue) {
    * Builds summary output from reward breakdown.
    */
   function render(result) {
+    if (result.endedEarly) {
+      els.summaryText.textContent = `Early harvest ended. Your plants were not ready, so you earned 0 coins this run.`;
+      screens.show('summary');
+      return;
+    }
+
     const theoryLine = result.hardMode
       ? 'Flow + autonomy achieved in hard mode. Strong effort, stronger reward.'
       : 'Flow + autonomy achieved in regular mode. Consistent effort builds momentum.';

@@ -1,0 +1,25 @@
+<!-- signup.html -->
+<input id="signup-email" placeholder="Email">
+<input id="signup-password" type="password" placeholder="Password">
+<button id="signup-btn">Sign up</button>
+<p>Already have an account? <a href="login.html">Login</a></p>
+
+<script type="module">
+    import { supabase } from '/supabaseclient.js';
+
+    const signupBtn = document.getElementById("signup-btn");
+
+    signupBtn.onclick = async () => {
+        const email = document.getElementById("signup-email").value;
+        const password = document.getElementById("signup-password").value;
+
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+            alert(error.message);
+            return;
+        }
+
+        alert('Account created! Please login.');
+        window.location.href = 'login.html';
+    };
+</script>

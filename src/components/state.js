@@ -12,5 +12,6 @@ export function createGameState() {
     restEndsAt: null,
     // persisted mute preference for focus background music
     isMuted: false,
+    onFocusStateChange: null,
   };
 }
