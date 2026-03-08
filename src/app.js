@@ -7,9 +7,14 @@ import { createSummaryController } from './components/summary.js';
 import { createGameState } from './components/state.js';
 import { createWalkthroughController } from './components/walkthrough.js';
 
+import { supabase } from '../supabaseclient.js';
+
+
 const state = createGameState();
 const els = getElements();
 const screens = createScreenController(els);
+
+
 
 /**
  * Writes a helper/debug message in the REST dialogue area.
@@ -31,6 +36,37 @@ function updateStats() {
  */
 function getIslandSummary() {
   return `${state.sessions} harvests complete, ${state.coins} coins stored, fields are growing.`;
+}
+
+
+export async function loadPlayerState(state) {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+
+    if (!sessionData?.session?.user) return;
+
+    const userId = sessionData.session.user.id;
+
+    const { data, error } = await supabase
+      .from('playerstats')
+      .select('coins, session_count')
+      .eq('auth_id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error loading player stats:', error);
+      return;
+    }
+
+    if (data) {
+      state.coins = data.coins;
+      console.log(state.coins)
+      state.sessions = data.session_count;
+      console.log(state.sessions)
+    }
+  } catch (err) {
+    console.error('Failed to load player state:', err);
+  }
 }
 
 const summaryController = createSummaryController(els, screens, setDialogue);
@@ -55,8 +91,10 @@ const walkthroughController = createWalkthroughController(els, walkthroughSteps)
 /**
  * Boots app components and binds all UI interactions.
  */
-function initApp() {
+async function initApp() {
   screens.show('setup');
+
+  await loadPlayerState(state);
   updateStats();
   summaryController.init();
   focusController.init();

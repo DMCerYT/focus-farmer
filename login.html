@@ -1,0 +1,58 @@
+<!-- login.html -->
+<input id="auth-email" placeholder="Email">
+<input id="auth-password" type="password" placeholder="Password">
+<button id="login-btn">Login</button>
+<p>Don't have an account? <a href="signup.html">Sign up</a></p>
+<button><a href="index.html">go back</a></button>
+
+<script type="module">
+    import { supabase } from '/supabaseClient.js';
+
+    const loginBtn = document.getElementById("login-btn");
+
+    // Function to check session (optional if you want auto logout)
+    async function updateLoginButton() {
+        const { data } = await supabase.auth.getSession();
+        const user = data.session?.user;
+
+        if (user) {
+            // User is logged in → show logout button
+            loginBtn.textContent = "Logout";
+            loginBtn.onclick = async () => {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    alert(error.message);
+                } else {
+                    window.location.href = "index.html"; // redirect home
+                }
+            };
+        } else {
+            // User not logged in → show login button
+            loginBtn.textContent = "Login";
+            loginBtn.onclick = login; // attach login function
+        }
+    }
+
+    // Login function
+    async function login() {
+        const email = document.getElementById("auth-email").value;
+        const password = document.getElementById("auth-password").value;
+
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+            alert(error.message);
+        } else {
+            // Redirect to home page (game)
+            window.location.href = "index.html";
+        }
+    }
+
+    // Call this on page load to update button state
+    updateLoginButton();
+
+    // Optional: react to auth changes dynamically
+    supabase.auth.onAuthStateChange((_event, _session) => {
+        updateLoginButton();
+    });
+</script>
