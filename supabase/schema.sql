@@ -120,9 +120,9 @@ begin
   if not found then raise exception 'You need 10 coins to pull an egg'; end if;
   v_roll := random();
   if v_roll < 0.5 then
-    v_name := 'Wave Penguin'; v_rarity := 'common'; v_asset := 'wave';
+    v_name := 'Smile and Wave Penguin'; v_rarity := 'common'; v_asset := 'wave';
   elsif v_roll < 0.8 then
-    v_name := 'Yellow Hat Penguin'; v_rarity := 'rare'; v_asset := 'yellow_hat';
+    v_name := 'The Penguin with the Yellow Hat'; v_rarity := 'rare'; v_asset := 'yellow_hat';
   elsif v_roll < 0.95 then
     v_name := 'Matcha Latte Penguin'; v_rarity := 'epic'; v_asset := 'matcha';
   elsif random() < 0.5 then
