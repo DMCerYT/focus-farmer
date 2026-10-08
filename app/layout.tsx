@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Focus Farmer",
   description: "Plant your focus. Harvest your progress.",
+  //icon: "/splash-art-focusFarmer.png",
 };
 
 export default function RootLayout({
